@@ -102,22 +102,34 @@
     margin-bottom: 0;
 }
 
+.markdown-body mark {
+    background-color: #fDDa36; /* Standard yellow highlight */
+    color: inherit; /* Use surrounding text color */
+    padding: 0.15em 0.3em; /* Add some padding */
+    border-radius: 4px; /* Slightly rounded corners */
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05); /* Subtle shadow */
+}
+
+.markdown-body mark code {
+    background-color: rgba(0, 0, 0, 0.08); /* Slightly darker bg for code inside highlight */
+}
 
 /* Code Blocks (Prism.js handles the syntax highlighting theme) */
 .markdown-body pre {
-    /* Prism theme (e.g., prism-okaidia.css) defines background, colors */
-    border-radius: var(--border-radius);
-    padding: 1.2rem 1.5rem; /* 增加内边距 */
-    overflow: auto; /* 长代码行滚动 */
+    background-color: #282c34; /* Matches prism-okaidia often */
+    border-radius: var(--border-radius); /* Use existing variable */
+    padding: 1.2rem 1.5rem;
+    padding-top: 2.8rem; /* << INCREASE top padding to make space for the button */
+    overflow: auto;
     margin: 1.5rem 0;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border: 1px solid #444; /* 边框可根据主题调整 */
+    border: 1px solid #444;
+    position: relative; /* << REQUIRED for absolute positioning of the button */
 }
 
 /* Inline Code */
 .markdown-body code {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-    font-size: 0.9em;
     background-color: rgba(0, 0, 0, 0.06);
     color: #c0392b; /* 单行代码颜色可以自定义 */
     padding: 0.25em 0.5em; /* 调整内边距 */
@@ -132,6 +144,43 @@
     border-radius: 0;
     font-size: 0.9rem; /* 代码字体大小 */
     line-height: 1.5; /* 代码行高 */
+}
+
+.copy-code-button {
+    position: absolute;
+    top: 0.6rem;           /* Position near the top */
+    right: 0.6rem;          /* Position near the right */
+    padding: 0.3rem 0.6rem; /* Button padding */
+    background-color: #555; /* Button background */
+    color: #eee;           /* Button text/icon color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: 0.7;          /* Slightly transparent */
+    transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
+    font-size: 0.8rem;     /* Icon size */
+    line-height: 1;        /* Prevent extra space around icon */
+    z-index: 1;            /* Ensure button is clickable */
+}
+.copy-code-button:hover {
+    opacity: 1;             /* Fully visible on hover */
+    background-color: #777;
+}
+.copy-code-button:active {
+    transform: scale(0.95); /* Click feedback */
+}
+.copy-code-button[disabled] { /* Style for feedback */
+    cursor: default;
+    opacity: 1;
+    background-color: #28a745; /* Green for success */
+    color: white;
+}
+.copy-code-button:disabled:hover { /* Prevent hover change when disabled */
+     background-color: #28a745;
+}
+/* Optional: Style for error feedback if needed */
+.copy-code-button.error {
+    background-color: #dc3545; /* Red for error */
 }
 
 /* Lists */
