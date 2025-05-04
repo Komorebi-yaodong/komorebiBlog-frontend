@@ -1,33 +1,31 @@
-/* main.css - 完整代码 */
+/* main.css */
+
 :root {
-    --primary-color: #3498db; /* 主题蓝 */
-    --secondary-color: #5dade2; /* 稍浅的蓝 */
-    --accent-color: #2e86c1; /* 深一点的蓝，用于强调 */
-    --text-color: #34495e; /* 深蓝灰色，代替纯黑 */
-    --light-text: #7f8c8d; /* 浅灰，用于元信息 */
-    --bg-color: #ffffff; /* 内容卡片背景 */
-    --light-bg: #f8f9fa; /* 页脚等浅背景 */
-    /* 修正 border-color */
-    --border-color: #e0e0e0; /* 使用一个有效的十六进制颜色值 */
-    --shadow-color: rgba(0, 0, 0, 0.1); /* 阴影颜色 */
+    --primary-color: #3498db;
+    --secondary-color: #5dade2;
+    --accent-color: #2e86c1;
+    --text-color: #34495e;
+    --light-text: #7f8c8d;
+    --bg-color: #ffffff;
+    --light-bg: #f8f9fa;
+    --border-color: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
     --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-serif: 'Noto Serif SC', Georgia, serif;
-    --border-radius: 8px; /* 圆角大小 */
-    --transition-speed: 0.3s; /* 过渡动画速度 */
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
 
-    /* --- 定义卡片和间隙的高度，用于计算 max-height --- */
-    /* !!重要!!: 根据 link-card 的实际高度调整 */
-    --link-card-image-height: 90px;
-    --link-card-content-approx-height: 90px; /* 估算标题+描述+meta高度 */
+    --link-card-image-height: 120px;
     --link-card-gap: 1.5rem;
-    --link-card-total-height: calc(var(--link-card-image-height) + var(--link-card-content-approx-height) + 1.6rem); /* 加上下 padding */
+    --post-card-image-width: 160px; /* Adjusted for better fit */
+    --post-card-gap: 1.8rem;
 }
 
 body {
     font-family: var(--font-sans);
     color: var(--text-color);
     line-height: 1.7;
-    background-image: url('../background.png'); /* 确保路径正确 */
+    background-image: url('../background.png');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
@@ -39,7 +37,6 @@ body {
     min-height: 100vh;
 }
 
-/* Helper class for content sections */
 .content-wrapper {
     background-color: rgba(255, 255, 255, 0.95);
     padding: 2rem 2.5rem;
@@ -48,391 +45,209 @@ body {
     margin-bottom: 2rem;
 }
 
-/* Hero Section */
 .hero {
     height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: white;
-    position: relative;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
-    overflow: hidden;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: white; position: relative; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); overflow: hidden;
 }
-
 .hero::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     background: linear-gradient(135deg, rgba(116, 235, 213, 0.8) 0%, rgba(159, 172, 230, 0.8) 100%),
                 rgba(0, 0, 0, 0.2);
-    opacity: 1;
-    transition: opacity 0.5s ease-in-out;
-    z-index: 1;
+    opacity: 1; transition: opacity 0.5s ease-in-out; z-index: 1;
 }
+.hero .container { position: relative; z-index: 2; }
+.hero.hero-overlay-hidden::before { opacity: 0; }
+.hero-title { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 700; animation: fadeInDown 1s ease-out; }
+.hero-subtitle { font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 300; animation: fadeInUp 1s ease-out 0.3s; animation-fill-mode: backwards; }
+.scroll-indicator { position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%); cursor: pointer; opacity: 0.8; transition: opacity var(--transition-speed) ease; animation: bounce 2s infinite; }
+.scroll-indicator:hover { opacity: 1; }
+.scroll-indicator span { font-size: 0.8rem; margin-bottom: 0.5rem; }
+.scroll-indicator i { font-size: 1.5rem; }
 
-.hero .container {
-    position: relative;
-    z-index: 2;
-}
-
-.hero.hero-overlay-hidden::before {
-    opacity: 0;
-}
-
-.hero-title {
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    font-weight: 700;
-    margin-bottom: 1rem;
-    letter-spacing: -0.5px;
-    font-family: var(--font-serif);
-    animation: fadeInDown 1s ease-out;
-}
-
-.hero-subtitle {
-    font-size: clamp(1.1rem, 3vw, 1.5rem);
-    font-weight: 300;
-    margin-bottom: 3rem;
-    opacity: 0.9;
-    animation: fadeInUp 1s ease-out 0.3s;
-    animation-fill-mode: backwards;
-}
-
-/* Main Content Area */
 .main-content {
-    padding: 3rem 0;
-    flex: 1;
-    margin-top: -60px;
-    position: relative;
-    z-index: 10;
+    padding: 3rem 0; flex: 1;
+    margin-top: -60px; position: relative; z-index: 10;
 }
 
-.section-title {
-    font-size: 2.2rem;
-    margin-bottom: 2.5rem;
-    position: relative;
-    display: inline-block;
-    font-family: var(--font-serif);
-    font-weight: 700;
-    padding-bottom: 0.5rem;
+.main-tabs { border-bottom: 2px solid var(--border-color); margin-bottom: 2rem; }
+.main-tabs .nav-item { margin-bottom: -2px; }
+.main-tabs .nav-link {
+    border: none; border-bottom: 2px solid transparent;
+    color: var(--light-text); padding: 0.8rem 1.2rem;
+    font-size: 1.1rem; font-weight: 500; transition: color var(--transition-speed) ease, border-bottom-color var(--transition-speed) ease;
+    background: none;
 }
-.section-title::after {
-    content: '';
-    position: absolute;
-    width: 60px;
-    height: 4px;
-    background: var(--primary-color);
-    bottom: -5px;
-    left: 0;
-    border-radius: 2px;
-}
-/* Section Separator */
-.section-separator {
-    margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-}
+.main-tabs .nav-link i { margin-right: 0.5em; }
+.main-tabs .nav-link:hover { color: var(--text-color); border-bottom-color: var(--secondary-color); }
+.main-tabs .nav-link.active { color: var(--primary-color); font-weight: 600; border-bottom-color: var(--primary-color); background: none; }
 
-/* === Links List: Horizontal Scroll (1-2 Rows) === */
+.tab-content { margin-top: 1rem; }
+.tab-pane { padding-top: 1rem; display: none; }
+.tab-pane.active.show { display: block; }
+
+.list-layout { margin-top: 1rem; padding-bottom: 1rem; }
+
 .links-list {
-    margin-top: 2rem;
-    display: flex;
-    flex-wrap: wrap; /* 允许换行 */
-    gap: var(--link-card-gap); /* 使用变量控制间隙 */
-
-    /* === 关键: 限制最大高度以容纳约2行 === */
-    /* 高度 = (单卡片高度 * 2) + 一行的间隙 */
-    max-height: calc((var(--link-card-total-height) * 2) + var(--link-card-gap));
-    overflow-y: hidden;  /* 隐藏垂直滚动条 */
-    overflow-x: auto;    /* 启用水平滚动条 */
-    padding-bottom: 1rem; /* 为滚动条留出空间 */
-
-    /* === 可选: 美化滚动条 === */
-    &::-webkit-scrollbar { height: 8px; }
-    &::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-    &::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-    &::-webkit-scrollbar-thumb:hover { background: #aaa; }
-    scrollbar-width: thin;
-    scrollbar-color: #ccc #f1f1f1;
-}
-
-/* === Link Card Styling (for horizontal layout) === */
-.link-card {
-    display: flex;
-    flex-direction: column;
-    width: 220px; /* 固定宽度 */
-    flex-shrink: 0; /* 防止收缩 */
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    background-color: var(--bg-color);
-    text-decoration: none;
-    color: var(--text-color);
-    overflow: hidden;
-    transition: transform var(--transition-speed) ease,
-                box-shadow var(--transition-speed) ease,
-                border-color var(--transition-speed) ease;
-    opacity: 0;
-    animation: fadeInUp 0.5s ease-out forwards;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    /* 设置一个大致的总高度，影响上面的max-height计算 */
-    /* min-height: var(--link-card-total-height); */ /* 可以考虑设置最小高度 */
-}
-.link-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    border-color: var(--secondary-color);
-}
-.link-card-image-container {
-    width: 100%;
-    height: var(--link-card-image-height); /* 使用变量 */
-    overflow: hidden;
-    background-color: var(--light-bg);
-    flex-shrink: 0;
-}
-.link-card-image-placeholder {
-    width: 100%;
-    height: var(--link-card-image-height); /* 使用变量 */
-    display: flex; align-items: center; justify-content: center;
-    background-color: var(--light-bg); color: var(--light-text);
-    flex-shrink: 0;
-}
-.link-card-image-placeholder::before {
-    content: '\f0c1'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 1.8rem;
-}
-.link-card-image {
-    display: block; width: 100%; height: 100%; object-fit: cover;
-    transition: transform 0.35s ease;
-}
-.link-card:hover .link-card-image { transform: scale(1.08); }
-.link-card-content {
-    padding: 0.8rem 1rem;
-    display: flex; flex-direction: column;
-    flex-grow: 1; /* 填充剩余空间 */
-    /* min-height: var(--link-card-content-approx-height); /* 考虑为内容区设置最小高度 */
-}
-.link-card-title {
-    font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem;
-    font-family: var(--font-serif); line-height: 1.3;
-}
-.link-card-description {
-    font-size: 0.8rem;
-    color: var(--light-text);
-    line-height: 1.5;
-    margin-bottom: 0.6rem;
-    overflow: hidden;              /* 必须：隐藏溢出的内容 */
-    text-overflow: ellipsis;       /* 可选：显示省略号 */
-    display: -webkit-box;          /* 必须：启用 Flexbox 布局（旧版）*/
-    -webkit-box-orient: vertical;  /* 必须：设置 Flexbox 垂直方向 */
-    -webkit-line-clamp: 2;         /* 必须：限制为 2 行 (适用于 Webkit/Blink 内核) */
-    line-clamp: 2;                 /* 标准属性 (浏览器支持可能不同) */
-
-    flex-grow: 1;                  /* 占据空间，将 meta 推到底部 */
-    /* min-height 可以保留作为布局占位，但截断主要靠 line-clamp */
-    min-height: calc(1.5 * 2 * 0.8rem); /* 大约两行的高度 */
-}
-
-.link-card-meta {
-    font-size: 0.75rem; color: var(--light-text);
-    margin-top: auto; /* 推到底部 */
-}
-.link-card-url {
-    word-break: break-all; opacity: 0.7; display: inline-block;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 100%;
-}
-.link-card-url::before {
-    content: '\f0ac'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
-    margin-right: 0.3em;
-}
-/* --- End Links --- */
-
-/* === Posts List: Vertical (Max 2 Columns) === */
-.posts-list {
-    margin-top: 2rem;
     display: grid;
-    gap: 1.8rem;
-    /* === 关键: 1-2 列布局 === */
+    gap: var(--link-card-gap);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.link-card {
+    display: block; width: 100%;
+    border: 1px solid var(--border-color); border-radius: var(--border-radius);
+    background-color: var(--bg-color); text-decoration: none; color: var(--text-color);
+    overflow: hidden; transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    opacity: 0; animation: fadeInUp 0.5s ease-out forwards; box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.link-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); border-color: var(--secondary-color); }
+.link-card-image-container { width: 100%; height: var(--link-card-image-height); overflow: hidden; background-color: var(--light-bg); }
+.link-card-image-placeholder { width: 100%; height: var(--link-card-image-height); display: flex; align-items: center; justify-content: center; background-color: var(--light-bg); color: var(--light-text); }
+.link-card-image-placeholder::before { content: '\f0c1'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 1.8rem; }
+.link-card-image { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+.link-card:hover .link-card-image { transform: scale(1.05); }
+.link-card-content { padding: 1rem 1.2rem; }
+.link-card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.6rem; font-family: var(--font-serif); line-height: 1.3; }
+.link-card-description {
+    font-size: 0.8rem; color: var(--light-text); line-height: 1.5; margin-bottom: 0.6rem;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    line-clamp: 3; overflow: hidden; text-overflow: ellipsis;
+}
+.link-card-meta { font-size: 0.75rem; color: var(--light-text); margin-top: 0.8rem; }
+.link-card-url { word-break: break-all; opacity: 0.7; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.link-card-url::before { content: '\f0ac'; font-family: 'Font Awesome 6 Free'; font-weight: 900; margin-right: 0.3em; }
+
+.posts-list {
+    display: grid;
+    gap: var(--post-card-gap);
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-/* === Post Card Styling === */
 .post-card {
-    display: flex; flex-direction: row; align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 1rem 1.5rem; /* 统一内边距 */
-    background-color: var(--bg-color);
-    text-decoration: none;
-    color: var(--text-color);
-    overflow: hidden;
-    opacity: 0;
-    animation: fadeInUp 0.5s ease-out forwards;
-    transition: transform var(--transition-speed) ease,
-                box-shadow var(--transition-speed) ease,
-                border-color var(--transition-speed) ease;
+    display: flex; flex-direction: row; align-items: stretch; /* stretch items to fill height */
+    border: 1px solid var(--border-color); border-radius: var(--border-radius);
+    background-color: var(--bg-color); text-decoration: none; color: var(--text-color);
+    overflow: hidden; transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    opacity: 0; animation: fadeInUp 0.5s ease-out forwards;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    position: relative; /* Needed for gradient overlay */
 }
-.post-card:hover {
-    transform: translateY(-6px) scale(1.01);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
-    border-color: var(--primary-color);
-}
+.post-card:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12); border-color: var(--primary-color); }
+
 .post-card-content {
-    flex-grow: 1; padding-right: 1.5rem;
-    display: flex; flex-direction: column; justify-content: center;
+    flex-grow: 1; padding: 1rem 1.2rem;
+    display: flex; flex-direction: column; justify-content: center; /* Center content vertically if needed */
+    z-index: 2; /* Ensure content is above gradient */
+    position: relative; /* Needed for z-index */
 }
-.post-card-title {
-    font-size: 1.3rem; margin-bottom: 0.5rem; font-weight: 600;
-    color: var(--text-color); font-family: var(--font-serif); line-height: 1.4;
-}
-.post-card-meta {
-    font-size: 0.85rem; color: var(--light-text);
-}
+.post-card-title { font-size: 1.3rem; margin-bottom: 0.5rem; font-weight: 600; font-family: var(--font-serif); line-height: 1.4; }
+.post-card-meta { font-size: 0.85rem; color: var(--light-text); }
 .post-card-date i { margin-right: 0.3em; }
+
 .post-card-image-container {
-    flex-shrink: 0;
-    /* 调整为你想要的大小 */
-    width: 120px;
-    height: 90px;
-    border-radius: 6px; /* 调整圆角 */
-    overflow: hidden;
+    flex-shrink: 0; width: var(--post-card-image-width); /* Fixed width */
+    height: 100%; /* Match card height */
+    border-radius: 6px; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
     background-color: var(--light-bg);
+    /* Remove left margin and border */
+    margin-left: 0;
+    border-left: none;
+    z-index: 1; /* Place behind content */
+    position: relative; /* Needed for gradient overlay positioning inside */
 }
+
+/* Gradient Overlay between Text and Image */
+.post-card-image-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -20px; /* Adjust to start gradient a bit before the edge */
+    bottom: 0;
+    width: 40px; /* Width of the gradient */
+    background: linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0)); /* White to transparent gradient */
+    z-index: 3; /* Above image, below content */
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+
 .post-card-image {
-    display: block; max-width: 100%; max-height: 100%;
-    width: auto; height: auto;
-    object-fit: contain; /* 保持图片完整 */
+    display: block; width: 100%; height: 100%;
+    object-fit: cover; /* Crop to fill the space while maintaining aspect ratio */
     transition: transform var(--transition-speed) ease;
 }
 .post-card:hover .post-card-image { transform: scale(1.05); }
-/* === End Posts === */
 
-/* Footer */
 .footer {
-    background-color: rgba(248, 249, 250, 0.9);
-    padding: 1.5rem 0;
-    margin-top: auto;
-    border-top: 1px solid var(--border-color);
-    box-shadow: 0 -2px 10px var(--shadow-color);
-    color: var(--light-text);
-    font-size: 0.9rem;
+    background-color: rgba(248, 249, 250, 0.9); padding: 1.5rem 0; margin-top: auto;
+    border-top: 1px solid var(--border-color); box-shadow: 0 -2px 10px var(--shadow-color);
+    color: var(--light-text); font-size: 0.9rem;
 }
 .footer p { margin-bottom: 0; }
-.social-link {
-    font-size: 1.6rem; margin-left: 1rem; color: var(--light-text);
-    transition: color var(--transition-speed) ease;
-}
+.social-link { font-size: 1.6rem; margin-left: 1rem; color: var(--light-text); transition: color var(--transition-speed) ease; }
 .social-link:hover { color: var(--primary-color); }
 
-/* Navbar */
 .navbar {
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 2px 10px var(--shadow-color);
+    background-color: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 10px var(--shadow-color);
+    position: sticky; top: 0; z-index: 1000;
 }
-.navbar-brand {
-    font-weight: 700; color: var(--primary-color) !important;
-    font-family: var(--font-serif); font-size: 1.4rem;
-}
+.navbar-brand { font-weight: 700; color: var(--primary-color) !important; font-family: var(--font-serif); font-size: 1.4rem; }
 .nav-link { transition: color var(--transition-speed) ease; }
 .nav-link:hover { color: var(--primary-color) !important; }
 
-/* Navbar Toggler */
-.navbar-toggler {
-    border: none; padding: 0.2rem 0.4rem;
-    background-color: transparent !important;
-    transition: transform 0.2s ease-in-out;
-}
+.navbar-toggler { border: none; padding: 0.2rem 0.4rem; background-color: transparent !important; transition: transform 0.2s ease-in-out; }
 .navbar-toggler:focus { outline: none; box-shadow: none; }
-.navbar-toggler i {
-    font-size: 1.6rem; color: var(--text-color);
-    transition: color 0.2s ease, transform 0.2s ease;
-    vertical-align: middle;
-}
+.navbar-toggler i { font-size: 1.6rem; color: var(--text-color); transition: color 0.2s ease, transform 0.2s ease; vertical-align: middle; }
 .navbar-toggler:hover i { color: var(--primary-color); transform: scale(1.1); }
 
-/* Loading Spinner */
-.loading {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 4rem 0; color: var(--light-text);
-}
-.spinner {
-    width: 45px; height: 45px; border: 5px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%; border-top-color: var(--primary-color);
-    animation: spin 1s ease-in-out infinite; margin-bottom: 1rem;
-}
+.loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 0; color: var(--light-text); }
+.spinner { width: 45px; height: 45px; border: 5px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; margin-bottom: 1rem; }
 
-/* Error Message */
-.error-message {
-    padding: 1.5rem; margin: 1rem 0; border-radius: var(--border-radius);
-    /* Consider adding specific styles for background/color if not using alert classes */
-    background-color: #f8d7da; /* Example error background */
-    color: #721c24;       /* Example error text */
-    border: 1px solid #f5c6cb; /* Example error border */
-}
-.error-message p { margin-bottom: 0.5rem; }
-.error-message p:last-child { margin-bottom: 0; }
+.error-message { padding: 1.5rem; margin: 1rem 0; border-radius: var(--border-radius); background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.error-message p { margin-bottom: 0.5rem; } .error-message p:last-child { margin-bottom: 0; }
 
-
-/* Keyframes */
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); }
-    40% { transform: translate(-50%, -15px); }
-    60% { transform: translate(-50%, -8px); }
-}
+@keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); } 40% { transform: translate(-50%, -15px); } 60% { transform: translate(-50%, -8px); } }
 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-
-/* Responsive Adjustments */
-@media (max-width: 992px) { /* Medium screens */
+@media (max-width: 992px) {
     .content-wrapper { padding: 1.5rem 2rem; }
     .main-content { padding: 2rem 0; }
-    .posts-list {
-        /* Adjust minmax if needed to force 1 column earlier */
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
+    .posts-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .links-list { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 }
 
-@media (max-width: 768px) { /* Small screens */
+@media (max-width: 768px) {
     .hero { height: auto; min-height: 70vh; padding: 6rem 1rem; }
     .main-content { margin-top: -40px; padding: 1.5rem 0; }
     .content-wrapper { padding: 1.5rem; margin-left: 10px; margin-right: 10px; }
-    .section-title { font-size: 1.8rem; margin-bottom: 2rem; }
 
-    /* Posts List: Force single column */
-    .posts-list { grid-template-columns: 1fr; }
+    .posts-list { grid-template-columns: 1fr; gap: 1rem; }
     .post-card {
-        flex-direction: column-reverse; /* Image top */
+        flex-direction: column-reverse;
         align-items: flex-start; padding: 1rem;
     }
     .post-card-content { padding-right: 0; padding-bottom: 1rem; width: 100%; }
-    .post-card-image-container { width: 100%; height: 150px; margin-bottom: 1rem; }
+    .post-card-image-container {
+        width: 100%; height: 150px;
+        margin-left: 0; margin-bottom: 1rem;
+        border-left: none; border-bottom: 1px solid var(--border-color);
+        padding-left: 0;
+    }
+    .post-card-image { object-fit: cover; }
 
-    /* Links List: Adjust card width for smaller screens */
-    .links-list {
-        gap: 1rem; /* Reduce gap */
-         /* Re-evaluate max-height if card dimensions change */
-         --link-card-image-height-mobile: 70px; /* Example smaller height */
-         --link-card-content-approx-height-mobile: 75px;
-         --link-card-total-height-mobile: calc(var(--link-card-image-height-mobile) + var(--link-card-content-approx-height-mobile) + 1.4rem);
-         max-height: calc((var(--link-card-total-height-mobile) * 2) + 1rem);
-    }
-    .link-card {
-        width: 180px; /* Smaller fixed width */
-    }
-    .link-card-image-container, .link-card-image-placeholder {
-        height: var(--link-card-image-height-mobile); /* Use mobile height */
-    }
+    .links-list { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+    .link-card-image-container { height: 100px; }
+    .link-card-image-placeholder { height: 100px; }
+    .link-card-content { padding: 0.8rem 1rem; }
     .link-card-title { font-size: 1rem; }
-    .link-card-description { font-size: 0.75rem; min-height: calc(1.5 * 2 * 0.75rem); }
+    .link-card-description { font-size: 0.75rem; }
     .link-card-meta { font-size: 0.7rem; }
 
+    .main-tabs .nav-link { padding: 0.6rem 0.8rem; font-size: 1rem; }
 
     .footer { text-align: center; }
     .footer .text-md-end { text-align: center !important; margin-top: 0.5rem; }
 }
-
-/* Styles for specific elements like post content markdown are assumed to be in markdown.css */
-

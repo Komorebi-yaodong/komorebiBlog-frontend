@@ -1,132 +1,137 @@
-// post.js - Complete Code
-document.addEventListener('DOMContentLoaded', function() {
+// post.js - 最终完整代码
+
+document.addEventListener('DOMContentLoaded', function () {
     const postTitle = document.getElementById('post-title');
     const postDate = document.getElementById('post-date');
     const postBody = document.getElementById('post-body');
     const repoUrl = 'https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main';
 
+    // Get URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const filePath = urlParams.get('file');
 
     if (!filePath) {
-        postBody.innerHTML = '<div class="error-message">未指定文章文件</div>';
+        handleLoadingError(new Error("未指定文章文件路径。"), null);
         return;
     }
 
     // === Define Marked Extension for ==highlight== ===
     const highlightExtension = {
         name: 'highlight',
-        level: 'inline', // Type of extension
-        start(src) { return src.indexOf('=='); }, // Find the first '=='
+        level: 'inline',
+        start(src) { return src.indexOf('=='); },
         tokenizer(src, tokens) {
-            const rule = /^==((?:(?!==).)+?)==/; // Regex: == non-greedy content ==
+            const rule = /^==((?:(?!==).)+?)==/;
             const match = rule.exec(src);
             if (match) {
-                // Check if the content inside is just whitespace, ignore if so
                 if (match[1].trim() === '') {
-                    return {
-                        type: 'text', // Treat as plain text if only whitespace inside
-                        raw: match[0],
-                        text: match[0] // Render the raw == ==
-                    };
+                    return { type: 'text', raw: match[0], text: match[0] };
                 }
-                // Create a 'highlight' token
                 return {
-                    type: 'highlight', // Name of the token
-                    raw: match[0], // The full matched text "==...=="
-                    text: match[1].trim(), // The content inside, trimmed
-                     // Tokenize the content inside the highlight tags
+                    type: 'highlight',
+                    raw: match[0],
+                    text: match[1].trim(),
                     tokens: this.lexer.inlineTokens(match[1].trim())
                 };
             }
         },
         renderer(token) {
-           // Render the content using the parser to handle nested inline tokens
-           return `<mark>${this.parser.parseInline(token.tokens)}</mark>`;
+            return `<mark>${this.parser.parseInline(token.tokens)}</mark>`;
         }
     };
     // === End Marked Extension ===
 
-
     // === Configure Marked ===
-    marked.use({ extensions: [highlightExtension] }); // Use the custom extension
-
+    marked.use({ extensions: [highlightExtension] });
     marked.setOptions({
-        breaks: true, // Convert '\n' in paragraphs into <br>
-        gfm: true,    // Use GitHub Flavored Markdown
-        sanitize: false, // IMPORTANT: Allows HTML, necessary for KaTeX, Prism classes, and <mark>
-        smartypants: false, // Don't auto-change quotes, dashes, etc.
-        xhtml: false      // Don't self-close tags like <br />
+        breaks: true,
+        gfm: true,
+        sanitize: false, // Necessary for KaTeX, Prism, <mark> etc.
+        smartypants: false,
+        xhtml: false
     });
     // === End Marked Configuration ===
 
 
-    // Fetch post content and metadata
-    fetch(`${repoUrl}/${filePath}`)
-        .then(response => {
-            if (!response.ok) throw new Error(`无法获取文章内容 (状态: ${response.status})`);
-            return response.text();
-        })
-        .then(markdown => {
-            return fetch(`${repoUrl}/list.json`) // Fetch metadata simultaneously
-                .then(response => {
-                    if (!response.ok) throw new Error(`无法获取文章列表 (list.json) (状态: ${response.status})`);
-                    return response.json();
-                })
-                .then(posts => {
-                    const post = posts.find(p => p.file === filePath);
-                    if (!post) throw new Error('在 list.json 中找不到对应的文章信息');
+    // Fetch post content and metadata simultaneously
+    Promise.all([
+        fetch(`${repoUrl}/${filePath}`).then(res => {
+            if (!res.ok) throw new Error(`无法获取文章内容 (状态: ${res.status})`);
+            return res.text();
+        }).catch(err => { console.error("Fetch post content failed:", err); return null; }),
+        fetch(`${repoUrl}/list.json`).then(res => {
+            if (!res.ok) throw new Error(`无法获取文章列表 (list.json) (状态: ${res.status})`);
+            return res.json();
+        }).catch(err => { console.error("Fetch list.json failed:", err); return null; })
+    ])
+        .then(([markdown, posts]) => {
+            if (!markdown) {
+                throw new Error("无法获取文章内容文件。");
+            }
 
-                    // Set page title, post title, and date
-                    document.title = `${post.title} - Komorebi's Blog`;
-                    postTitle.textContent = post.title;
-                    postDate.textContent = formatDate(post.time); // Assuming post object still HAS time
+            const post = posts ? posts.find(p => p.file === filePath) : null;
 
-                    // === Process Markdown and Render ===
-                    // 1. Parse Markdown (Marked runs the extension)
-                    let html = marked.parse(markdown);
-                    // 2. Fix image paths
-                    html = replaceImagePaths(html, filePath);
-                    // 3. Set the HTML content
-                    postBody.innerHTML = html;
+            if (!post) {
+                console.warn(`在 list.json 中未找到文章信息 (${filePath})，部分元数据可能缺失。`);
+                // Render using filename if no metadata found
+                document.title = `${filePath.split('/').pop().replace(/\.md$/, '')} - Komorebi's Blog`;
+                postTitle.textContent = filePath.split('/').pop().replace(/\.md$/, '') || "无标题";
+                postDate.textContent = "日期未知"; // Set default if metadata missing
+            } else {
+                // Use metadata from list.json if available
+                document.title = `${post.title} - Komorebi's Blog`;
+                postTitle.textContent = post.title;
+                postDate.textContent = post.time ? formatDate(post.time) : "日期未知";
+            }
 
-                    // === Run post-processing in ORDER ===
-                    // 4. Render Math Formulas
-                    try {
-                         if (window.renderMathInElement) {
-                             renderMathInElement(postBody, {
-                                delimiters: [
-                                    {left: '$$', right: '$$', display: true},
-                                    {left: '$', right: '$', display: false},
-                                    {left: '\\(', right: '\\)', display: false},
-                                    {left: '\\[', right: '\\]', display: true}
-                                ],
-                                throwOnError : false
-                            });
-                            // console.log("KaTeX auto-render executed.");
-                         } else {
-                             console.warn("KaTeX auto-render function not found.");
-                         }
-                    } catch (error) {
-                        console.error("Error rendering KaTeX:", error);
-                    }
 
-                    // 5. Highlight Code Blocks
-                    Prism.highlightAllUnder(postBody);
-                    // console.log("Prism highlighting executed.");
+            // Parse and process the markdown
+            let html = marked.parse(markdown);
+            html = replaceImagePaths(html, filePath); // Fix image paths
 
-                    // 6. Add Copy Buttons to Code Blocks
-                    addCopyButtons(postBody);
-                    // console.log("Copy buttons added.");
-                    // === End Post-processing ===
-                });
+            // === Set Content & Run Post-processing in ORDER ===
+            postBody.innerHTML = html;
+
+            // Render Math Formulas (KaTeX)
+            try {
+                if (window.renderMathInElement) {
+                    renderMathInElement(postBody, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false },
+                            { left: '\\(', right: '\\)', display: false },
+                            { left: '\\[', right: '\\]', display: true }
+                        ],
+                        throwOnError: false
+                    });
+                }
+            } catch (error) {
+                console.error("Error rendering KaTeX:", error);
+            }
+
+            // Highlight Code Blocks (Prism)
+            Prism.highlightAllUnder(postBody);
+
+            // Add Copy Buttons to Code Blocks
+            addCopyButtons(postBody);
+
+            // Scroll to top of content if hash is present (e.g., from click)
+            // This might interfere with smooth scroll, test if needed
+            // if (window.location.hash) {
+            //     const targetElement = document.querySelector(window.location.hash);
+            //     if (targetElement) {
+            //         targetElement.scrollIntoView({ behavior: 'smooth' });
+            //     }
+            // }
+
         })
         .catch(error => {
-            console.error('获取或处理文章失败:', error);
-             handleLoadingError(error, filePath);
+            console.error('处理文章失败:', error);
+            // General error if initial fetches failed or subsequent processing failed
+            handleLoadingError(error, filePath);
         });
 
-    // --- Helper Functions --- (Keep formatDate, replaceImagePaths, handleLoadingError)
+    // --- Helper Functions ---
 
     function formatDate(dateString) {
         try {
@@ -137,50 +142,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}年${month}月${day}日`;
         } catch (e) {
-            console.error("日期格式化错误:", dateString, e);
+            console.warn("日期格式化错误:", dateString, e);
             return "日期未知";
         }
     }
 
     function replaceImagePaths(html, postFilePath) {
-       // ... (Keep the existing replaceImagePaths function) ...
         const baseDir = postFilePath.substring(0, postFilePath.lastIndexOf('/'));
         return html.replace(/src="((?!(http|https):\/\/)[^"]+)"/g, (match, src) => {
             let absoluteSrc = src;
+            // Simple path handling: assume relative to the .md file's directory or repo root/figures
             if (absoluteSrc.startsWith('./')) {
-                 absoluteSrc = `${repoUrl}/${baseDir}/${absoluteSrc.substring(2)}`;
+                absoluteSrc = `${repoUrl}/${baseDir}/${absoluteSrc.substring(2)}`;
             } else if (absoluteSrc.startsWith('../')) {
                 const parentDir = baseDir.substring(0, baseDir.lastIndexOf('/'));
                 absoluteSrc = `${repoUrl}/${parentDir}/${absoluteSrc.substring(3)}`;
             } else if (!absoluteSrc.startsWith('/')) {
-                 if (absoluteSrc.includes('/')) {
-                      absoluteSrc = `${repoUrl}/${absoluteSrc}`;
-                 } else {
-                      absoluteSrc = `${repoUrl}/figures/${absoluteSrc}`;
-                 }
-            } else {
-                 absoluteSrc = `${repoUrl}${absoluteSrc}`;
+                if (absoluteSrc.includes('/')) { // Maybe 'figures/img.png'
+                    absoluteSrc = `${repoUrl}/${absoluteSrc}`;
+                } else { // Maybe just 'img.png', assume in figures
+                    absoluteSrc = `${repoUrl}/figures/${absoluteSrc}`;
+                }
+            } else { // Starts with '/', treat as repo root
+                absoluteSrc = `${repoUrl}${absoluteSrc}`;
             }
+            // console.log(`Rewriting image src: ${src} -> ${absoluteSrc}`);
             return `src="${absoluteSrc}"`;
         });
     }
 
     function handleLoadingError(error, filePath) {
-        // ... (Keep the existing handleLoadingError function) ...
-         postBody.innerHTML = `
+        postBody.innerHTML = `
                 <div class="error-message alert alert-danger">
-                    <h4>获取文章失败</h4>
-                    <p>无法加载文章 "${filePath || '未知文件'}" 的内容。</p>
-                    <p>错误信息: ${error.message}</p>
-                    <p>请检查文件路径是否正确，或稍后重试。</p>
+                    <h4>加载失败</h4>
+                    <p>无法加载文章内容。</p>
+                    <p>错误信息: ${error.message || '未知错误'}</p>
+                    ${filePath ? `<p>尝试加载的文件: ${filePath}</p>` : ''}
+                    <p>请检查网络连接或文件路径是否正确。</p>
                 </div>
             `;
         postTitle.textContent = "加载错误";
-        postDate.textContent = ""; // Clear date as well
+        postDate.textContent = "";
         document.title = "错误 - Komorebi's Blog";
     }
 
-    // Function to Add Copy Buttons (Keep as is)
+    // Function to Add Copy Buttons
     function addCopyButtons(container) {
         const preBlocks = container.querySelectorAll('pre');
         preBlocks.forEach(pre => {
@@ -199,27 +205,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 navigator.clipboard.writeText(codeToCopy).then(() => {
                     button.innerHTML = '<i class="fas fa-check"></i>';
                     button.setAttribute('aria-label', '已复制');
-                     button.title = '已复制!';
-                    button.disabled = true;
+                    button.title = '已复制!';
+                    // button.disabled = true; // Optional: Disable briefly
                     setTimeout(() => {
                         button.innerHTML = '<i class="far fa-copy"></i>';
                         button.setAttribute('aria-label', '复制代码');
-                         button.title = '复制代码';
-                        button.disabled = false;
+                        button.title = '复制代码';
+                        // button.disabled = false; // Optional
                     }, 2000);
                 }).catch(err => {
                     console.error('复制代码失败:', err);
                     button.innerHTML = '<i class="fas fa-times"></i>';
-                     button.title = '复制失败';
-                     setTimeout(() => {
+                    button.title = '复制失败';
+                    setTimeout(() => {
                         button.innerHTML = '<i class="far fa-copy"></i>';
-                         button.title = '复制代码';
+                        button.title = '复制代码';
                     }, 2000);
                 });
             });
-            // Append inside pre might cause issues with Prism if pre has padding.
-            // Consider appending to a wrapper around pre if styling becomes tricky.
-            pre.appendChild(button);
+            pre.appendChild(button); // Append inside pre
         });
     }
     // End Copy Button Function

@@ -1,9 +1,15 @@
-/* Basic Reset/Defaults */
+/* markdown.css - 最终完整代码 */
+
 .markdown-body {
     font-family: var(--font-sans);
     color: var(--text-color);
-    line-height: 1.8; /* 增加行高提升易读性 */
-    font-size: 1rem; /* 基准字体大小 */
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.markdown-body>*:first-child {
+    /* Remove top margin from the very first element */
+    margin-top: 0 !important;
 }
 
 /* Headings */
@@ -15,17 +21,16 @@
 .markdown-body h6 {
     margin-top: 2.2rem;
     margin-bottom: 1.2rem;
-    font-weight: 700; /* 加粗标题 */
+    font-weight: 700;
     line-height: 1.3;
     font-family: var(--font-serif);
-    color: var(--text-color); /* 确保标题颜色 */
+    color: var(--text-color);
 }
 
 .markdown-body h1 {
     font-size: 2.1rem;
     border-bottom: 2px solid var(--primary-color);
     padding-bottom: 0.6rem;
-    margin-top: 0; /* 第一个H1不加顶部外边距 */
 }
 
 .markdown-body h2 {
@@ -65,137 +70,151 @@
 .markdown-body a {
     color: var(--accent-color);
     text-decoration: none;
-    border-bottom: 1px dotted var(--accent-color); /* 下划线样式 */
+    border-bottom: 1px dotted var(--accent-color);
     transition: color var(--transition-speed) ease, border-bottom-color var(--transition-speed) ease;
 }
 
 .markdown-body a:hover {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
-    text-decoration: none; /* 悬停时移除 dotted line，如果需要 */
+    text-decoration: none;
 }
 
 /* Images */
 .markdown-body img {
     max-width: 100%;
     height: auto;
-    display: block; /* 块级元素，方便设置 margin */
-    margin: 2rem auto; /* 上下边距，左右自动居中 */
+    display: block;
+    margin: 2rem auto;
     border-radius: var(--border-radius);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--border-color); /* 细边框 */
+    border: 1px solid var(--border-color);
 }
 
 /* Blockquotes */
 .markdown-body blockquote {
     padding: 1rem 1.5rem;
-    margin: 1.5rem 0; /* 与周围元素间距 */
+    margin: 1.5rem 0;
     color: var(--light-text);
     border-left: 5px solid var(--primary-color);
-    background-color: rgba(52, 152, 219, 0.05); /* 非常淡的背景色 */
-    border-radius: 0 var(--border-radius) var(--border-radius) 0; /* 右侧圆角 */
+    background-color: rgba(52, 152, 219, 0.05);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
 }
+
 .markdown-body blockquote p {
-    margin-bottom: 0.5rem; /* 引用块内段落间距 */
+    margin-bottom: 0.5rem;
 }
+
 .markdown-body blockquote p:last-child {
     margin-bottom: 0;
 }
 
-.markdown-body mark {
-    background-color: #fDDa36; /* Standard yellow highlight */
-    color: inherit; /* Use surrounding text color */
-    padding: 0.15em 0.3em; /* Add some padding */
-    border-radius: 4px; /* Slightly rounded corners */
-    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05); /* Subtle shadow */
-}
-
-.markdown-body mark code {
-    background-color: rgba(0, 0, 0, 0.08); /* Slightly darker bg for code inside highlight */
-}
-
-/* Code Blocks (Prism.js handles the syntax highlighting theme) */
+/* Code Blocks (Prism.js handles syntax highlighting theme) */
 .markdown-body pre {
-    background-color: #282c34; /* Matches prism-okaidia often */
-    border-radius: var(--border-radius); /* Use existing variable */
+    background-color: #282c34;
+    /* Prism theme background */
+    border-radius: var(--border-radius);
     padding: 1.2rem 1.5rem;
-    padding-top: 2.8rem; /* << INCREASE top padding to make space for the button */
+    padding-top: 2.8rem;
+    /* Space for button */
     overflow: auto;
     margin: 1.5rem 0;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     border: 1px solid #444;
-    position: relative; /* << REQUIRED for absolute positioning of the button */
+    position: relative;
+    /* For copy button */
 }
 
-/* Inline Code */
 .markdown-body code {
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9em;
+    /* Inline code style */
     background-color: rgba(0, 0, 0, 0.06);
-    color: #c0392b; /* 单行代码颜色可以自定义 */
-    padding: 0.25em 0.5em; /* 调整内边距 */
+    color: #c0392b;
+    padding: 0.25em 0.5em;
     border-radius: 4px;
 }
 
 .markdown-body pre code {
-    /* Reset styles for code inside pre, let Prism control it */
+    /* Reset styles for code inside pre */
     background-color: transparent;
-    color: inherit; /* 继承 pre 的颜色 */
+    color: inherit;
     padding: 0;
     border-radius: 0;
-    font-size: 0.9rem; /* 代码字体大小 */
-    line-height: 1.5; /* 代码行高 */
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
+/* == Copy Code Button Styles == */
 .copy-code-button {
     position: absolute;
-    top: 0.6rem;           /* Position near the top */
-    right: 0.6rem;          /* Position near the right */
-    padding: 0.3rem 0.6rem; /* Button padding */
-    background-color: #555; /* Button background */
-    color: #eee;           /* Button text/icon color */
+    top: 0.6rem;
+    right: 0.6rem;
+    padding: 0.3rem 0.6rem;
+    background-color: #555;
+    color: #eee;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    opacity: 0.7;          /* Slightly transparent */
+    opacity: 0.7;
     transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
-    font-size: 0.8rem;     /* Icon size */
-    line-height: 1;        /* Prevent extra space around icon */
-    z-index: 1;            /* Ensure button is clickable */
+    font-size: 0.8rem;
+    line-height: 1;
+    z-index: 1;
 }
+
 .copy-code-button:hover {
-    opacity: 1;             /* Fully visible on hover */
+    opacity: 1;
     background-color: #777;
 }
+
 .copy-code-button:active {
-    transform: scale(0.95); /* Click feedback */
+    transform: scale(0.95);
 }
-.copy-code-button[disabled] { /* Style for feedback */
+
+.copy-code-button[disabled] {
     cursor: default;
     opacity: 1;
-    background-color: #28a745; /* Green for success */
+    background-color: #28a745;
     color: white;
 }
-.copy-code-button:disabled:hover { /* Prevent hover change when disabled */
-     background-color: #28a745;
+
+.copy-code-button:disabled:hover {
+    background-color: #28a745;
 }
-/* Optional: Style for error feedback if needed */
-.copy-code-button.error {
-    background-color: #dc3545; /* Red for error */
+
+/* Prevent hover change when disabled */
+
+/* == Highlight Style for <mark> tag (from ==...==) == */
+.markdown-body mark {
+    background-color: #fDDa36;
+    color: inherit;
+    padding: 0.15em 0.3em;
+    border-radius: 4px;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.05);
 }
+
+.markdown-body mark code {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
 
 /* Lists */
 .markdown-body ul,
 .markdown-body ol {
-    padding-left: 2.5rem; /* 增加缩进 */
+    padding-left: 2.5rem;
     margin-bottom: 1.2rem;
 }
 
 .markdown-body li {
-    margin-bottom: 0.6rem; /* 列表项间距 */
+    margin-bottom: 0.6rem;
 }
-.markdown-body ul ul, .markdown-body ul ol,
-.markdown-body ol ul, .markdown-body ol ol {
-    margin-top: 0.5rem; /* 嵌套列表的上边距 */
+
+.markdown-body ul ul,
+.markdown-body ul ol,
+.markdown-body ol ul,
+.markdown-body ol ol {
+    margin-top: 0.5rem;
     margin-bottom: 0.5rem;
 }
 
@@ -206,13 +225,13 @@
     margin: 1.5rem 0;
     border: 1px solid var(--border-color);
     box-shadow: 0 2px 5px var(--shadow-color);
-    border-radius: var(--border-radius); /* 给表格外围添加圆角 */
-    overflow: hidden; /* 配合圆角 */
+    border-radius: var(--border-radius);
+    overflow: hidden;
 }
 
 .markdown-body table th,
 .markdown-body table td {
-    padding: 0.8rem 1rem; /* 单元格内边距 */
+    padding: 0.8rem 1rem;
     border: 1px solid var(--border-color);
     text-align: left;
 }
@@ -222,15 +241,15 @@
     font-weight: 600;
     font-family: var(--font-serif);
 }
-.markdown-body table tr:nth-child(even) {
-    background-color: rgba(248, 249, 250, 0.5); /* 斑马纹 */
-}
 
+.markdown-body table tr:nth-child(even) {
+    background-color: rgba(248, 249, 250, 0.5);
+}
 
 /* Horizontal Rules */
 .markdown-body hr {
-    height: 2px; /* 加粗分割线 */
+    height: 2px;
     background-color: var(--border-color);
     border: none;
-    margin: 2.5rem 0; /* 增加上下边距 */
+    margin: 2.5rem 0;
 }
