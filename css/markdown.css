@@ -1,10 +1,20 @@
 /* markdown.css - 最终完整代码 */
 
+
+@font-face {
+    font-family: 'LXGWWenKaiMono'; /* 给你的字体起一个名字，你可以随意命名 */
+    src: url('../fonts/LXGWWenKaiMono-Regular.ttf') format('truetype'); /* 指定字体文件的路径和格式 */
+    font-weight: normal; /* 如果字体有不同的粗细，可以在这里指定 */
+    font-style: normal;   /* 如果字体有斜体等样式，可以在这里指定 */
+  }
+
+
 .markdown-body {
-    font-family: var(--font-sans);
+    /* font-family: var(--font-sans); */
+    font-family: 'LXGWWenKaiMono',sans-serif;
     color: var(--text-color);
     line-height: 1.8;
-    font-size: 1rem;
+    font-size: 1.25rem;
 }
 
 .markdown-body>*:first-child {
@@ -23,7 +33,8 @@
     margin-bottom: 1.2rem;
     font-weight: 700;
     line-height: 1.3;
-    font-family: var(--font-serif);
+    /* font-family: var(--font-serif); */
+    font-family: "LXGWWenKaiMono",sans-serif;
     color: var(--text-color);
 }
 
