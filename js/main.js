@@ -15,6 +15,83 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentPostsFilterTag = null;
     let currentLinksFilterTag = null;
 
+    const BACKGROUND_CHANGE_INTERVAL_MS = 30000; // 每30秒切换一次背景
+    let dynamicBackgroundImages = [];
+    let currentDynamicBgIndex = 0;
+    let bgLayer1, bgLayer2;
+    let activeBgLayer, inactiveBgLayer;
+    let backgroundChangeIntervalId = null;
+
+    async function fetchBackgroundConfig() {
+        try {
+            const response = await fetch(`${repoUrl}/background.json`, { cache: "no-cache" });
+            if (!response.ok) {
+                console.warn(`Failed to fetch background.json (${response.status}).`);
+                return null;
+            }
+            const imagePaths = await response.json();
+            if (!Array.isArray(imagePaths) || imagePaths.length === 0) {
+                console.warn('background.json is empty or not an array.');
+                return null;
+            }
+            return imagePaths.map(path => {
+                if (typeof path === 'string' && !path.startsWith('http://') && !path.startsWith('https://')) {
+                    return `${repoUrl}/${path.replace(/^\.?\//, '')}`;
+                }
+                return path;
+            }).filter(path => typeof path === 'string' && path.trim() !== '');
+        } catch (error) {
+            console.error("Error fetching or processing background.json:", error);
+            return null;
+        }
+    }
+
+    function switchDynamicBackground(imageUrl) {
+        if (!bgLayer1 || !bgLayer2 || !imageUrl) return;
+
+        inactiveBgLayer.style.backgroundImage = `url('${imageUrl}')`;
+        activeBgLayer.classList.remove('active');
+        inactiveBgLayer.classList.add('active');
+
+        [activeBgLayer, inactiveBgLayer] = [inactiveBgLayer, activeBgLayer];
+    }
+
+    async function initializeDynamicBackgrounds() {
+        bgLayer1 = document.getElementById('bg-layer-1');
+        bgLayer2 = document.getElementById('bg-layer-2');
+
+        if (!bgLayer1 || !bgLayer2) {
+            console.error("Background layer elements not found. Dynamic background disabled.");
+            return;
+        }
+
+        activeBgLayer = bgLayer1; // Start with layer 1 as active (it's initially transparent)
+        inactiveBgLayer = bgLayer2;
+
+        const fetchedImages = await fetchBackgroundConfig();
+
+        if (fetchedImages && fetchedImages.length > 0) {
+            dynamicBackgroundImages = fetchedImages;
+            currentDynamicBgIndex = Math.floor(Math.random() * dynamicBackgroundImages.length);
+
+            switchDynamicBackground(dynamicBackgroundImages[currentDynamicBgIndex]); // Set initial background
+
+            if (dynamicBackgroundImages.length > 1) {
+                if (backgroundChangeIntervalId) clearInterval(backgroundChangeIntervalId);
+                backgroundChangeIntervalId = setInterval(() => {
+                    currentDynamicBgIndex = (currentDynamicBgIndex + 1) % dynamicBackgroundImages.length;
+                    switchDynamicBackground(dynamicBackgroundImages[currentDynamicBgIndex]);
+                }, BACKGROUND_CHANGE_INTERVAL_MS);
+            }
+        } else {
+            console.log("No dynamic backgrounds loaded. Default CSS background will be used.");
+            // If you want a specific default image when background.json fails or is empty:
+            // bgLayer1.style.backgroundImage = `url('your-default-static-image.jpg')`;
+            // bgLayer1.classList.add('active');
+        }
+    }
+
+
     function handleHeroOverlay() {
         if (!heroElement) return;
         heroElement.classList.toggle('hero-overlay-hidden', window.scrollY > scrollThreshold);
@@ -56,9 +133,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 imageHtml = `<div class="post-card-image-container"><img src="${imageUrl}" alt="${post.title}" class="post-card-image"></div>`;
             }
-            
-            const tagsHtml = post.tag && post.tag.length > 0 
-                ? `<div class="card-tags">${post.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
+
+            const tagsHtml = post.tag && post.tag.length > 0
+                ? `<div class="card-tags">${post.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>`
                 : '';
 
             postElement.innerHTML = `
@@ -110,9 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const descriptionHtml = link.description ? `<p class="link-card-description">${link.description}</p>` : '<p class="link-card-description" style="height: 4.5em;"></p>';
-            
-            const tagsHtml = link.tag && link.tag.length > 0 
-                ? `<div class="card-tags">${link.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
+
+            const tagsHtml = link.tag && link.tag.length > 0
+                ? `<div class="card-tags">${link.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>`
                 : '';
 
             linkElement.innerHTML = `
@@ -164,14 +241,14 @@ document.addEventListener('DOMContentLoaded', function () {
             li.appendChild(button);
             return li;
         };
-        
+
         listElement.appendChild(createTagItem('all', '全部标签'));
 
         const sortedTags = Array.from(tagsSet).sort();
         sortedTags.forEach(tag => {
             listElement.appendChild(createTagItem(tag, tag));
         });
-        
+
         if (tagsSet.size === 0) {
             listElement.innerHTML = '<li class="text-muted small">暂无可用标签。</li>';
         }
@@ -179,8 +256,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function handlePostTagClick(tag) {
         currentPostsFilterTag = (tag === 'all' ? null : tag);
-        const postsToDisplay = currentPostsFilterTag 
-            ? originalPostsData.filter(p => p.tag && p.tag.includes(currentPostsFilterTag)) 
+        const postsToDisplay = currentPostsFilterTag
+            ? originalPostsData.filter(p => p.tag && p.tag.includes(currentPostsFilterTag))
             : originalPostsData;
         displayPosts(postsToDisplay);
         renderTagSidebar('posts', allPostTags, handlePostTagClick, postsTagsListElement, currentPostsFilterTag);
@@ -188,15 +265,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function handleLinkTagClick(tag) {
         currentLinksFilterTag = (tag === 'all' ? null : tag);
-        const linksToDisplay = currentLinksFilterTag 
-            ? originalLinksData.filter(l => l.tag && l.tag.includes(currentLinksFilterTag)) 
+        const linksToDisplay = currentLinksFilterTag
+            ? originalLinksData.filter(l => l.tag && l.tag.includes(currentLinksFilterTag))
             : originalLinksData;
         displayLinks(linksToDisplay);
         renderTagSidebar('links', allLinkTags, handleLinkTagClick, linksTagsListElement, currentLinksFilterTag);
     }
-    
+
     function sortPosts(posts) {
-         const postsWithIndex = posts.map((post, index) => ({ ...post, originalIndex: index }));
+        const postsWithIndex = posts.map((post, index) => ({ ...post, originalIndex: index }));
         postsWithIndex.sort((a, b) => {
             const dateA = new Date(a.time);
             const dateB = new Date(b.time);
@@ -210,6 +287,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return postsWithIndex;
     }
 
+    initializeDynamicBackgrounds(); // Initialize dynamic backgrounds early
+
     Promise.all([
         fetch(`${repoUrl}/list.json`, { cache: "no-cache" }).then(res => {
             if (!res.ok) throw new Error(`获取文章列表失败 (${res.status})`);
@@ -220,41 +299,41 @@ document.addEventListener('DOMContentLoaded', function () {
             return res.json();
         }).catch(err => { console.error("Fetch links failed:", err); return null; })
     ])
-    .then(([posts, links]) => {
-        if (posts) {
-            originalPostsData = sortPosts(posts);
-        } else {
-            if (postsListElement) postsListElement.innerHTML = `<div class="error-message alert alert-warning col-12"><p>无法加载文章列表。</p></div>`;
-        }
+        .then(([posts, links]) => {
+            if (posts) {
+                originalPostsData = sortPosts(posts);
+            } else {
+                if (postsListElement) postsListElement.innerHTML = `<div class="error-message alert alert-warning col-12"><p>无法加载文章列表。</p></div>`;
+            }
 
-        if (links) {
-            originalLinksData = links;
-        } else {
-            if (linksListElement) linksListElement.innerHTML = `<div class="error-message alert alert-warning col-12"><p>无法加载导航链接。</p></div>`;
-        }
-        
-        extractAllTags();
+            if (links) {
+                originalLinksData = links;
+            } else {
+                if (linksListElement) linksListElement.innerHTML = `<div class="error-message alert alert-warning col-12"><p>无法加载导航链接。</p></div>`;
+            }
 
-        displayPosts(originalPostsData);
-        renderTagSidebar('posts', allPostTags, handlePostTagClick, postsTagsListElement, currentPostsFilterTag);
+            extractAllTags();
 
-        displayLinks(originalLinksData);
-        renderTagSidebar('links', allLinkTags, handleLinkTagClick, linksTagsListElement, currentLinksFilterTag);
+            displayPosts(originalPostsData);
+            renderTagSidebar('posts', allPostTags, handlePostTagClick, postsTagsListElement, currentPostsFilterTag);
 
-        if (!posts && !links) {
+            displayLinks(originalLinksData);
+            renderTagSidebar('links', allLinkTags, handleLinkTagClick, linksTagsListElement, currentLinksFilterTag);
+
+            if (!posts && !links) {
+                const contentWrapper = document.querySelector('.main-content .content-wrapper');
+                if (contentWrapper) {
+                    contentWrapper.innerHTML = `<div class="error-message alert alert-danger"><p>未能加载任何内容。请检查网络连接和仓库配置。</p></div>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('未知加载错误:', error);
             const contentWrapper = document.querySelector('.main-content .content-wrapper');
             if (contentWrapper) {
-                contentWrapper.innerHTML = `<div class="error-message alert alert-danger"><p>未能加载任何内容。请检查网络连接和仓库配置。</p></div>`;
+                contentWrapper.innerHTML = `<div class="error-message alert alert-danger"><p>加载内容时发生未知错误：${error.message}</p></div>`;
             }
-        }
-    })
-    .catch(error => {
-        console.error('未知加载错误:', error);
-        const contentWrapper = document.querySelector('.main-content .content-wrapper');
-        if (contentWrapper) {
-            contentWrapper.innerHTML = `<div class="error-message alert alert-danger"><p>加载内容时发生未知错误：${error.message}</p></div>`;
-        }
-    });
+        });
 
     const scrollIndicator = document.querySelector('.scroll-indicator');
     if (scrollIndicator) {
