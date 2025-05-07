@@ -2,8 +2,14 @@ document.addEventListener('DOMContentLoaded',function(){
     const postTitle=document.getElementById('post-title');
     const postDate=document.getElementById('post-date');
     const postBody=document.getElementById('post-body');
-    const repoUrl='https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main';
+    const repoUrl='https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main'; // 已有
     const filePath=new URLSearchParams(window.location.search).get('file');
+
+    // 调用共享的背景初始化函数
+    if (typeof initializeDynamicBackgrounds === 'function') {
+        initializeDynamicBackgrounds(repoUrl);
+    }
+
     if(!filePath){handleLoadingError(new Error("未指定文章文件路径。"),null);return;}
     const mathBlock={
         name:'mathBlock',level:'block',
