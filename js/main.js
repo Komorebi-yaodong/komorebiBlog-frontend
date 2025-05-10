@@ -5,9 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const linksTagsListElement = document.getElementById('links-tags-list');
     const heroElement = document.querySelector('.hero');
 
-    // https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
-    // https://fastly.jsdelivr.net/gh/Komorebi-yaodong/komorebiBlog
-    // https://cdn.jsdmirror.cn/gh/Komorebi-yaodong/komorebiBlog
     const repoUrl = 'https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main';
     const scrollThreshold = 50;
 
@@ -18,14 +15,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentPostsFilterTag = null;
     let currentLinksFilterTag = null;
 
-    // 背景切换逻辑已移至 background-switcher.js
-
     function handleHeroOverlay() {
         if (!heroElement) return;
         heroElement.classList.toggle('hero-overlay-hidden', window.scrollY > scrollThreshold);
     }
-    handleHeroOverlay();
-    window.addEventListener('scroll', handleHeroOverlay);
+    if (heroElement) { // Ensure heroElement exists before adding listener
+        handleHeroOverlay();
+        window.addEventListener('scroll', handleHeroOverlay);
+    }
+
 
     function displayPosts(postsToRender) {
         if (!postsListElement) return;
@@ -38,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         postsToRender.forEach((post, index) => {
             const postElement = document.createElement('a');
-            postElement.className = 'post-card';
+            postElement.className = 'post-card home-post-card'; // Added home-post-card for specific styling
             postElement.href = `post.html?file=${encodeURIComponent(post.file)}`;
             postElement.style.animationDelay = `${index * 0.05}s`;
 
@@ -60,23 +58,39 @@ document.addEventListener('DOMContentLoaded', function () {
                     imageUrl = `${repoUrl}/${imageUrl}`;
                 }
                 imageHtml = `<div class="post-card-image-container"><img src="${imageUrl}" alt="${post.title}" class="post-card-image"></div>`;
+                
+                // Add class for image position based on index (even/odd)
+                if (index % 2 === 0) {
+                    postElement.classList.add('image-left');
+                } else {
+                    postElement.classList.add('image-right');
+                }
+            } else {
+                postElement.classList.add('no-image');
             }
             
             const tagsHtml = post.tag && post.tag.length > 0 
                 ? `<div class="card-tags">${post.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
                 : '';
 
-            postElement.innerHTML = `
-                 <div class="post-card-content">
-                     <div>
-                        <h3 class="post-card-title">${post.title}</h3>
-                        <div class="post-card-meta">
-                            <span class="post-card-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
-                        </div>
-                     </div>
-                     ${tagsHtml}
+            let descriptionHtml = '';
+            if (post.description) { // Assuming 'description' field in list.json
+                descriptionHtml = `<p class="post-card-description">${post.description}</p>`;
+            }
+
+            const contentAreaHtml = `
+             <div class="post-card-content-area">
+                 <div class="post-card-main-text">
+                    <h3 class="post-card-title">${post.title}</h3>
+                    ${descriptionHtml}
                  </div>
-                 ${imageHtml}`;
+                 <div class="post-card-footer">
+                    <span class="post-card-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
+                    ${tagsHtml}
+                 </div>
+             </div>`;
+            
+            postElement.innerHTML = imageHtml + contentAreaHtml; // Image always first in DOM if exists
             postsListElement.appendChild(postElement);
         });
     }
@@ -215,7 +229,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return postsWithIndex;
     }
 
-    // 调用共享的背景初始化函数
     if (typeof initializeDynamicBackgrounds === 'function') {
         initializeDynamicBackgrounds(repoUrl);
     }

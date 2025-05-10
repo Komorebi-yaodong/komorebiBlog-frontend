@@ -15,10 +15,15 @@
 
     --link-card-image-height: 160px;
     --link-card-gap: 1.5rem;
-    --post-card-image-width: 200px;
-    --post-card-gap: 1.8rem;
+    
+    /* For homepage post cards */
+    --home-post-card-image-width: 280px; 
+    --home-post-card-image-height: 220px;
+    --home-post-card-gap: 2rem;
+
+
     --background-fade-duration: 1.5s;
-    --post-hero-min-height: 35vh; /* Reduced height */
+    --post-hero-min-height: 35vh; 
     --navbar-height: 60px; 
 }
 
@@ -72,7 +77,6 @@ body {
 .actual-post-content-wrapper {
     margin-bottom: 0;
 }
-
 
 .hero {
     height: 100vh;
@@ -223,6 +227,140 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+/* === Homepage Post List Styling === */
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--home-post-card-gap);
+}
+
+.post-card.home-post-card {
+    display: flex;
+    align-items: stretch; 
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--bg-color);
+    text-decoration: none;
+    color: var(--text-color);
+    overflow: hidden;
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out forwards;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.post-card.home-post-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-color);
+}
+
+.post-card.home-post-card .post-card-image-container {
+    flex-shrink: 0;
+    width: var(--home-post-card-image-width);
+    height: var(--home-post-card-image-height);
+    overflow: hidden;
+    background-color: var(--light-bg);
+}
+.post-card.home-post-card.image-left .post-card-image-container {
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+}
+.post-card.home-post-card.image-right .post-card-image-container {
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}
+
+
+.post-card.home-post-card .post-card-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-speed) ease;
+}
+
+.post-card.home-post-card:hover .post-card-image {
+    transform: scale(1.05);
+}
+
+.post-card.home-post-card .post-card-content-area {
+    flex-grow: 1;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    min-height: var(--home-post-card-image-height); 
+}
+.post-card.home-post-card.no-image .post-card-content-area {
+    min-height: auto; 
+}
+
+
+.post-card.home-post-card .post-card-main-text {
+    flex-grow: 1; 
+}
+
+.post-card.home-post-card .post-card-title {
+    font-size: 1.4rem;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    font-family: var(--font-serif);
+    line-height: 1.3;
+    color: var(--text-color);
+}
+.post-card.home-post-card.no-image .post-card-title {
+     margin-bottom: 1rem; 
+}
+
+
+.post-card.home-post-card .post-card-description {
+    font-size: 0.9rem;
+    color: var(--light-text);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    display: -webkit-box; 
+    -webkit-box-orient: vertical; 
+    -webkit-line-clamp: 3; 
+    line-clamp: 3; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.post-card.home-post-card .post-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto; 
+    padding-top: 0.8rem; 
+    border-top: 1px solid #eee; 
+}
+
+
+.post-card.home-post-card .post-card-date {
+    font-size: 0.8rem;
+    color: var(--light-text);
+}
+.post-card.home-post-card .post-card-date i {
+    margin-right: 0.3em;
+}
+
+.post-card.home-post-card .card-tags {
+    margin-top: 0; 
+    margin-left: 0.5rem; 
+}
+.post-card.home-post-card .card-tags .tag-badge {
+    font-size: 0.65rem; 
+}
+
+
+/* Image alternation for homepage post cards */
+.post-card.home-post-card.image-right {
+    flex-direction: row-reverse;
+}
+
+
+/* Link Card Styling (remains largely the same) */
 .link-card {
     display: flex;
     flex-direction: column;
@@ -333,102 +471,10 @@ body {
     font-weight: 900;
     margin-right: 0.3em;
 }
+/* === End of Homepage Post List Styling === */
 
-.posts-list {
-    display: grid;
-    gap: var(--post-card-gap);
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-}
 
-.post-card {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    background-color: var(--bg-color);
-    text-decoration: none;
-    color: var(--text-color);
-    overflow: hidden;
-    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
-    opacity: 0;
-    animation: fadeInUp 0.5s ease-out forwards;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    position: relative;
-}
-
-.post-card:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
-    border-color: var(--primary-color);
-}
-
-.post-card-content {
-    flex-grow: 1;
-    padding: 1rem 1.2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    z-index: 2;
-    position: relative;
-}
-
-.post-card-title {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    font-family: var(--font-serif);
-    line-height: 1.4;
-}
-
-.post-card-meta {
-    font-size: 0.85rem;
-    color: var(--light-text);
-}
-
-.post-card-date i {
-    margin-right: 0.3em;
-}
-
-.post-card-image-container {
-    flex-shrink: 0;
-    width: var(--post-card-image-width);
-    height: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--light-bg);
-    margin-left: 0;
-    border-left: none;
-    z-index: 1;
-    position: relative;
-}
-
-.post-card-image-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -20px;
-    bottom: 0;
-    width: 40px;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
-    z-index: 3;
-    pointer-events: none;
-}
-
-.post-card-image {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform var(--transition-speed) ease;
-}
-
-.post-card:hover .post-card-image {
-    transform: scale(1.05);
-}
-
+/* Generic .card-tags and .tag-badge (used by both link and post cards) */
 .card-tags {
     margin-top: 0.75rem;
     display: flex;
@@ -451,6 +497,7 @@ body {
     background-color: var(--secondary-color);
     color: white;
 }
+
 
 .tags-sidebar {
     padding: 1rem;
@@ -522,11 +569,11 @@ body {
     justify-content: center;
     text-align: center;
     position: relative;
-    padding: 3rem 1rem 2rem 1rem; /* Added padding-bottom */
+    padding: 3rem 1rem 2rem 1rem; 
     background-color: #343a40; 
 }
 
-.post-hero-header::before { /* Main overlay */
+.post-hero-header::before { 
     content: '';
     position: absolute;
     top: 0;
@@ -538,15 +585,15 @@ body {
     transition: background-color 0.3s ease-in-out;
 }
 
-.post-hero-header::after { /* Bottom fade gradient */
+.post-hero-header::after { 
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px; /* Height of the fade */
+    height: 60px; 
     background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
-    z-index: 1; /* Same level as ::before or slightly above if needed */
+    z-index: 1; 
 }
 
 .post-hero-header.no-image {
@@ -556,22 +603,21 @@ body {
     -webkit-backdrop-filter: blur(12px) saturate(140%); 
 }
 
-.post-hero-header.no-image::before { /* Overlay for no-image state */
+.post-hero-header.no-image::before { 
     background-color: rgba(0, 0, 0, 0.2); 
 }
 
-.post-hero-header.no-image::after { /* Bottom fade for no-image state */
+.post-hero-header.no-image::after { 
     background: linear-gradient(to bottom, 
-        rgba(255,255,255,0) 0%, /* Transparent start of the frost fade */
-        rgba(255,255,255,0.1) 100% /* Match the .no-image background-color */
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.1) 100% 
     );
-    /* This will fade the bottom of the frosted area itself */
 }
 
 
 .post-hero-content {
     position: relative;
-    z-index: 2; /* Above overlays */
+    z-index: 2; 
     max-width: 800px;
     margin: 0 auto;
 }
@@ -800,7 +846,7 @@ body {
 @media (max-width: 991.98px) {
     .content-wrapper { padding: 1.5rem 2rem; }
     .main-content { padding: 2rem 0; }
-    .posts-list { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    
     .links-list { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 
     .tags-sidebar,
@@ -810,12 +856,20 @@ body {
         max-height: none;
         top: auto;
     }
-    .post-page-content .col-lg-9 { /* Adjusted for new content width */
+    .post-page-content .col-lg-9 { 
         margin-bottom: 1.5rem;
     }
     .post-hero-header {
-      min-height: var(--post-hero-min-height, 30vh); /* Adjusted responsive height */
+      min-height: var(--post-hero-min-height, 30vh); 
     }
+    .post-card.home-post-card .post-card-image-container {
+        width: 220px;
+        height: 180px;
+    }
+    .post-card.home-post-card .post-card-content-area {
+        min-height: 180px;
+    }
+
 }
 
 @media (max-width: 768px) {
@@ -823,13 +877,11 @@ body {
     .main-content { margin-top: -40px; padding: 1.5rem 0; }
     .main-content.post-page-content { margin-top: 0; padding-top: 1.5rem; }
     .content-wrapper { padding: 1.5rem; margin-left: 10px; margin-right: 10px; }
-    .main-content .row > [class^="col-md-"] { width: 100%; } /* This is for index.html, post.html uses col-lg-* */
-    .posts-list { grid-template-columns: 1fr; gap: 1rem; }
-    .post-card { flex-direction: column-reverse; align-items: flex-start; }
-    .post-card-content { padding: 1rem; width: 100%; }
-    .post-card-image-container { width: 100%; height: 180px; margin-left: 0; margin-bottom: 1rem; border-left: none; padding-left: 0; }
-    .post-card-image-container::before { display: none; }
-    .post-card-image { object-fit: cover; }
+    
+    .main-content .row > [class^="col-md-"] { 
+        width: 100%; 
+    } 
+    
     .links-list { grid-template-columns: 1fr; gap: 1rem; }
     .link-card-image-container, .link-card-image-placeholder { height: 140px; }
     .link-card-content { padding: 0.8rem 1rem; }
@@ -841,13 +893,40 @@ body {
     .footer .text-md-end { text-align: center !important; margin-top: 0.5rem; }
 
     .post-hero-header {
-        min-height: var(--post-hero-min-height, 25vh); /* Adjusted responsive height */
-        padding: 2rem 1rem 1.5rem 1rem; /* Adjusted padding */
+        min-height: var(--post-hero-min-height, 25vh); 
+        padding: 2rem 1rem 1.5rem 1rem; 
     }
     .post-hero-title {
         font-size: clamp(1.5rem, 4vw, 2.2rem);
     }
     .post-hero-meta {
         font-size: 0.8rem;
+    }
+
+    /* Homepage post card responsive */
+    .post-card.home-post-card,
+    .post-card.home-post-card.image-right { 
+        flex-direction: column;
+    }
+    .post-card.home-post-card .post-card-image-container {
+        width: 100%;
+        height: 200px; 
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important; 
+    }
+    .post-card.home-post-card .post-card-content-area {
+        min-height: auto; 
+        padding: 1rem;
+    }
+    .post-card.home-post-card .post-card-title {
+        font-size: 1.2rem;
+    }
+    .post-card.home-post-card .post-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+    }
+    .post-card.home-post-card .card-tags {
+        margin-left: 0;
     }
 }
