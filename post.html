@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css">
-    <link rel="stylesheet" href="css/main.css"> 
+    <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/markdown.css">
     <script type="text/javascript">
         window.MathJax = {
@@ -36,48 +36,51 @@
             <div class="collapse navbar-collapse" id="navbarNav"><ul class="navbar-nav ms-auto"><li class="nav-item"><a class="nav-link" href="index.html">首页</a></li></ul></div>
         </div>
     </nav>
+
+    <div id="post-hero-header" class="post-hero-header">
+        <div class="container">
+            <div class="post-hero-content">
+                <h1 id="post-title" class="post-hero-title"></h1>
+                <div class="post-hero-meta">
+                    <i class="far fa-calendar-alt"></i> <span id="post-date"></span>
+                </div>
+                <div id="post-header-tags" class="post-hero-tags"></div>
+            </div>
+        </div>
+    </div>
+
     <div class="container main-content post-page-content">
         <div class="row">
-            <!-- Adjust columns for main content and TOC. Keep offset-xl-1 for overall centering. -->
-            <div class="col-xl-10 offset-xl-1">
-                <div class="row">
-                    <!-- Main Content Area -->
-                    <div class="col-lg-8">
-                        <div class="content-wrapper">
-                            <article class="post-content">
-                                <header class="post-header">
-                                    <h1 id="post-title" class="post-title"></h1>
-                                    <div class="post-meta"><i class="far fa-calendar-alt"></i> <span id="post-date"></span></div>
-                                </header>
-                                <div id="post-body" class="markdown-body">
-                                    <div class="loading"><div class="spinner"></div><p>正在加载文章内容...</p></div>
-                                </div>
-                                <div class="post-comments-section">
-                                    <hr class="my-4">
-                                    <p class="text-center">
-                                        <a href="https://github.com/Komorebi-yaodong/komorebiBlog/issues" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
-                                            <i class="fas fa-comments"></i> 在 GitHub Issues 发表评论或参与讨论
-                                        </a>
-                                    </p>
-                                </div>
-                            </article>
+            <div class="col-lg-9">
+                <div class="content-wrapper actual-post-content-wrapper">
+                    <article class="post-content">
+                        <div id="post-body" class="markdown-body">
+                            <div class="loading"><div class="spinner"></div><p>正在加载文章内容...</p></div>
                         </div>
-                    </div>
-                    <!-- Table of Contents Sidebar -->
-                    <div class="col-lg-4">
-                        <div id="toc-container" class="toc-sidebar sticky-top pt-lg-3"> 
-                            <h5 class="toc-title">文章大纲</h5>
-                            <nav id="toc-nav">
-                                <ul id="toc-list" class="list-unstyled">
-                                    <li class="text-muted small">正在生成大纲...</li>
-                                </ul>
-                            </nav>
+                        <div class="post-comments-section">
+                            <hr class="my-4">
+                            <p class="text-center">
+                                <a href="https://github.com/Komorebi-yaodong/komorebiBlog/issues" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
+                                    <i class="fas fa-comments"></i> 在 GitHub Issues 发表评论或参与讨论
+                                </a>
+                            </p>
                         </div>
-                    </div>
+                    </article>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div id="toc-container" class="toc-sidebar sticky-top">
+                    <h5 class="toc-title">文章大纲</h5>
+                    <nav id="toc-nav">
+                        <ul id="toc-list" class="list-unstyled">
+                            <li class="text-muted small">正在生成大纲...</li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
     </div>
+
     <footer class="footer">
         <div class="container">
             <div class="row align-items-center">
@@ -86,11 +89,12 @@
             </div>
         </div>
     </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/background-switcher.js"></script> 
+    <script src="js/background-switcher.js"></script>
     <script src="js/post.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-NS2438VDCH"></script>
     <script>
