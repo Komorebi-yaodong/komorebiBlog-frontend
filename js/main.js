@@ -84,22 +84,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!postsListElement) return;
         postsListElement.innerHTML = '';
         postsListElement.className = 'posts-list post-cards-grid';
-
-
         if (postsToRender.length === 0) {
             postsListElement.innerHTML = `<div class="col-12 text-center p-5"><p class="text-muted lead">没有找到匹配 "${currentPostsFilterTag || '任何'}" 标签的文章。</p></div>`;
             return;
         }
-
         postsToRender.forEach((post, index) => {
             const postElementWrapper = document.createElement('div');
             postElementWrapper.className = 'post-card-wrapper';
-
             const postElement = document.createElement('a');
             postElement.className = 'post-card-vertical';
             postElement.href = `post.html?file=${encodeURIComponent(post.file)}`;
             postElement.style.animationDelay = `${index * 0.05}s`;
-
             let formattedDate = "日期未知";
             if (post.time) {
                 try {
@@ -109,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 } catch (e) { console.error(`Post date format error for ${post.file}:`, e); }
             }
-
             let imageAreaHtml = '';
             if (post.image) {
                 let imageUrl = post.image;
@@ -119,21 +113,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 imageAreaHtml = `<div class="post-card-image-top-container"><img src="${imageUrl}" alt="${post.title}" class="post-card-image-top"></div>`;
             } else {
-                imageAreaHtml = `<div class="post-card-image-top-placeholder d-flex flex-column align-items-center justify-content-center">
-                                    <i class="far fa-image fa-3x text-muted mb-2"></i>
-                                    <h6 class="post-card-title-placeholder-text p-2 text-center small">${post.title}</h6>
+                // NEW: Artistic placeholder using the title
+                imageAreaHtml = `<div class="post-card-image-top-placeholder artistic-title-background">
+                                    <h3 class="artistic-title-placeholder-text">${post.title}</h3>
                                  </div>`;
             }
             
             const tagsHtml = post.tag && post.tag.length > 0 
                 ? `<div class="card-tags mt-auto pt-2">${post.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
-                : '<div class="card-tags mt-auto pt-2" style="height: 28px;"></div>'; // Keep space for tags
-
+                : '<div class="card-tags mt-auto pt-2" style="height: 28px;"></div>'; 
             let descriptionHtml = '';
             if (post.description) {
                 descriptionHtml = `<p class="post-card-description-vertical small">${post.description}</p>`;
             }
-
             const contentAreaHtml = `
              <div class="post-card-content-vertical">
                  <h5 class="post-card-title-vertical mb-2">${post.title}</h5>

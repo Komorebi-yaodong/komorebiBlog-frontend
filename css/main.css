@@ -1,3 +1,5 @@
+/* main.css */
+
 :root {
     --primary-color: #4A90E2; 
     --secondary-color: #50E3C2; 
@@ -10,23 +12,33 @@
     --border-color: #e4e7eb;
     --shadow-color: rgba(50, 50, 93, 0.1), rgba(0, 0, 0, 0.07); 
     --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --font-serif: 'Noto Serif SC', Georgia, serif;
+    --font-serif: 'Noto Serif SC', Georgia, serif; /* Ensure this font is appealing */
     --border-radius: 8px; 
     --transition-speed: 0.25s;
 
     --link-card-image-height: 150px;
     --link-card-gap: 1.5rem;
     
-    --post-card-vertical-image-height: 190px;
+    --post-card-vertical-image-height: 190px; /* This height will be used for the artistic placeholder too */
     --post-card-grid-gap: 1.5rem;
 
     --background-fade-duration: 1.5s;
     --post-hero-min-height: 35vh; 
     --navbar-height: 60px; 
     --sidebar-sticky-top-offset: calc(var(--navbar-height) + 1rem);
+
+    /* Colors for artistic title placeholder backgrounds (can be expanded or randomized via JS if desired) */
+    --placeholder-bg-1-start: #6D5BBA; /* Purpleish */
+    --placeholder-bg-1-end: #AB67B3;
+    --placeholder-bg-2-start: #4A90E2; /* Blueish (primary) */
+    --placeholder-bg-2-end: #7AC9F4;
+    --placeholder-bg-3-start: #50E3C2; /* Tealish (secondary) */
+    --placeholder-bg-3-end: #5DE799;
+    --placeholder-bg-4-start: #F5A623; /* Orangish */
+    --placeholder-bg-4-end: #F8D04E;
 }
 
-/* ... (Keep all CSS from html to .tag-badge:hover as in the previous good version) ... */
+/* ... (all existing CSS up to .post-card-image-top-placeholder) ... */
 html {
     scroll-behavior: smooth;
 }
@@ -231,16 +243,69 @@ body {
 }
 
 .post-card-image-top-container,
-.post-card-image-top-placeholder,
+.post-card-image-top-placeholder, /* Keep existing selector for height and basic structure */
 .link-card-image-container,
 .link-card-image-placeholder {
     width: 100%;
     overflow: hidden;
-    background-color: var(--light-bg);
+    background-color: var(--light-bg); /* Default bg if gradient is not applied or for link cards */
     border-bottom: 1px solid var(--border-color);
+    display: flex; /* Added for centering content */
+    align-items: center; /* Added for centering content */
+    justify-content: center; /* Added for centering content */
+    text-align: center; /* Added for centering content */
 }
 .post-card-image-top-container, .post-card-image-top-placeholder { height: var(--post-card-vertical-image-height); }
 .link-card-image-container, .link-card-image-placeholder { height: var(--link-card-image-height); }
+
+
+/* NEW styles for the artistic title background and text */
+.post-card-image-top-placeholder.artistic-title-background {
+    padding: 1rem; /* Padding inside the placeholder for the title */
+    /* Default gradient, can be overridden by more specific selectors or JS for variety */
+    background: linear-gradient(135deg, var(--placeholder-bg-2-start) 0%, var(--placeholder-bg-2-end) 100%);
+    color: white; /* Default text color for titles on gradient backgrounds */
+}
+
+/* You can add variety using :nth-child or if you assign classes with JS */
+/* Example of varying backgrounds based on card position (applied to post-card-wrapper or post-card-vertical if preferred) 
+   This requires JS to add these classes or careful planning if using only CSS nth-child.
+   For simplicity, the JS placeholder generation already adds 'artistic-title-background'.
+   If you want more variety, you could add like 'ph-style-1', 'ph-style-2' from JS to the placeholder div.
+*/
+/* .post-card-wrapper:nth-child(4n+1) .artistic-title-background {
+    background: linear-gradient(135deg, var(--placeholder-bg-1-start) 0%, var(--placeholder-bg-1-end) 100%);
+}
+.post-card-wrapper:nth-child(4n+2) .artistic-title-background {
+    background: linear-gradient(135deg, var(--placeholder-bg-2-start) 0%, var(--placeholder-bg-2-end) 100%);
+}
+.post-card-wrapper:nth-child(4n+3) .artistic-title-background {
+    background: linear-gradient(135deg, var(--placeholder-bg-3-start) 0%, var(--placeholder-bg-3-end) 100%);
+}
+.post-card-wrapper:nth-child(4n+4) .artistic-title-background {
+    background: linear-gradient(135deg, var(--placeholder-bg-4-start) 0%, var(--placeholder-bg-4-end) 100%);
+} */
+
+
+.artistic-title-placeholder-text {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 4vw, 2.2rem); /* Responsive font size */
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.25);
+    color: inherit; /* Inherits color from .artistic-title-background (which is white by default) */
+    
+    /* Handle long titles to prevent overflow and maintain aesthetics */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* Limit to 3 lines */
+    line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* max-height ensures the clamped text doesn't push container (approximate) */
+    max-height: calc(1.25em * 3 + 0.5em); /* line-height * lines + buffer */
+}
 
 
 .post-card-image-top, .link-card-image {
@@ -255,13 +320,16 @@ body {
     transform: scale(1.06);
 }
 
-.post-card-image-top-placeholder .post-card-title-placeholder-text {
-    font-family: var(--font-serif);
+/* REMOVED the old specific small title placeholder as it's replaced by artistic-title-placeholder-text */
+/* .post-card-image-top-placeholder .post-card-title-placeholder-text { ... } */
+
+
+.link-card-image-placeholder i { /* Style for the link icon in link card placeholder */
+    font-size: 2.5rem;
     color: var(--light-text);
-    font-weight: 500;
-    font-size: 0.9rem;
-    line-height: 1.3;
+    opacity: 0.7;
 }
+
 
 .post-card-content-vertical, .link-card-content {
     padding: 1.1rem 1.3rem;
@@ -343,19 +411,17 @@ body {
     border-color: var(--secondary-color);
 }
 
-/* Sidebar Overlap Fix and Styling */
 .sidebar-column {
     display: flex;
     flex-direction: column;
     gap: 1.5rem; 
-    position: sticky; /* Make the whole column sticky */
+    position: sticky; 
     top: var(--sidebar-sticky-top-offset);
-    max-height: calc(100vh - var(--sidebar-sticky-top-offset) - 1rem); /* Account for potential bottom padding/margin */
+    max-height: calc(100vh - var(--sidebar-sticky-top-offset) - 1rem); 
     overflow-y: auto;
 }
 
 .sidebar-section {
-    /* REMOVED position: sticky from here */
     padding: 1.2rem;
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(8px) saturate(130%);
@@ -366,7 +432,7 @@ body {
 }
 
 .sidebar-section-title {
-    font-size: 1rem; /* Unified title size */
+    font-size: 1rem; 
     font-weight: 600;
     color: var(--primary-color);
     margin-bottom: 1rem;
@@ -374,45 +440,44 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* Author Info Section Specific Styling */
 .author-sidebar-section .author-card-item {
-    border-bottom: none; /* Remove bottom border if only one author, or not desired */
+    border-bottom: none; 
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
 }
 .author-sidebar-section .author-card-item:last-child {
-    margin-bottom: 0; /* Ensure no extra margin for the last/only author card */
+    margin-bottom: 0; 
 }
 
 
 .author-avatar {
-    width: 100px; /* Slightly larger avatar */
-    height: 100px;
+    width: 100px; 
+    height: 100px; 
     object-fit: cover;
-    border: 3px solid var(--bg-color); /* White border around avatar */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 3px solid var(--bg-color); 
+    box-shadow: 0 3px 6px rgba(0,0,0,0.12); 
 }
 
 .author-name {
     font-weight: 600;
     color: var(--text-color);
-    font-size: 1.05rem; /* Slightly larger name */
+    font-size: 1.05rem; 
 }
 
 .author-description {
     line-height: 1.5;
-    font-size: 0.8rem; /* Adjust description size */
-    max-width: 90%; /* Prevent very long descriptions from breaking layout */
+    font-size: 0.8rem; 
+    max-width: 90%; 
     margin-left: auto;
     margin-right: auto;
 }
 
 .author-contact-links {
-    padding-top: 0.5rem; /* Add some space above links */
+    padding-top: 0.5rem; 
 }
 .author-contact-links a {
     color: var(--light-text);
-    font-size: 1rem; /* Slightly larger icons */
+    font-size: 1rem; 
 }
 .author-contact-links a:hover {
     color: var(--primary-color);
@@ -450,9 +515,6 @@ body {
     transform: translateX(0);
 }
 
-
-/* ... (Keep all CSS from .post-hero-header to the end of the file as in the previous good version) ... */
-/* Post Hero Header */
 .post-hero-header {
     min-height: var(--post-hero-min-height);
     background-size: cover;
@@ -519,7 +581,6 @@ body {
 .post-hero-meta { font-size: 0.9rem; opacity: 0.85; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
 .post-hero-meta i { margin-right: 0.4em; }
 
-/* TOC Sidebar */
 .toc-sidebar {
     padding: 1.2rem;
     background-color: rgba(255, 255, 255, 0.7);
@@ -528,8 +589,6 @@ body {
     border-radius: var(--border-radius);
     border: 1px solid rgba(255,255,255,0.25);
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    /* Make TOC sticky independently if desired, within its own column if different from main sidebar */
-    /* position: sticky; */ 
     top: var(--sidebar-sticky-top-offset);
     max-height: calc(100vh - var(--sidebar-sticky-top-offset) - 1rem);
     overflow-y: auto;
@@ -566,7 +625,6 @@ body {
     transform: translateX(3px);
 }
 
-/* Footer */
 .footer {
     background-color: #2c3238; 
     color: #aeb8c2; 
@@ -587,7 +645,6 @@ body {
 .footer-social-links .social-link:hover { color: var(--secondary-color); }
 
 
-/* Navbar */
 .navbar {
     background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px) saturate(180%);
@@ -618,7 +675,6 @@ body {
 .navbar-toggler i { font-size: 1.6rem; color: var(--text-color); transition: color 0.2s ease, transform 0.2s ease; vertical-align: middle; }
 .navbar-toggler:hover i { color: var(--primary-color); transform: scale(1.1); }
 
-/* Loading States */
 .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 0; color: var(--light-text); }
 .spinner {
     width: 40px;
@@ -641,25 +697,23 @@ body {
 
 .post-comments-section { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border-color); }
 
-/* Animations */
 @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translate(-50%, 0); } 40% { transform: translate(-50%, -15px); } 60% { transform: translate(-50%, -8px); } }
 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Responsive Adjustments */
 @media (max-width: 991.98px) {
-    .content-wrapper { padding: 2rem 1.5rem; } /* Adjusted padding for tablets */
+    .content-wrapper { padding: 2rem 1.5rem; } 
     .main-content { padding: 2.5rem 0; }
     
     .post-cards-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
     .links-grid-layout { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 
     .sidebar-column { 
-        position: static; /* On tablets, sidebar becomes static */
+        position: static; 
         max-height: none;
         overflow-y: visible;
-        margin-top: 2rem; /* Add space when stacked under main content */
+        margin-top: 2rem; 
      } 
     .toc-sidebar {
         position: static;
@@ -673,6 +727,8 @@ body {
    
     .post-card-image-top-container, .post-card-image-top-placeholder { height: 170px; }
     .link-card-image-container, .link-card-image-placeholder { height: 140px; }
+    .artistic-title-placeholder-text { font-size: clamp(1.3rem, 3.5vw, 2rem); } /* Adjust for tablets */
+
 }
 
 @media (max-width: 768px) {
@@ -680,7 +736,7 @@ body {
     .hero { height: auto; min-height: 65vh; padding: 5rem 1rem; }
     .main-content { margin-top: -30px; padding: 2rem 0; }
     .main-content.post-page-content { margin-top: 0; padding-top: 1.5rem; }
-    .content-wrapper { padding: 1.8rem 1rem; margin-left: 5px; margin-right: 5px; } /* Further reduce padding */
+    .content-wrapper { padding: 1.8rem 1rem; margin-left: 5px; margin-right: 5px; } 
     
     .main-content .row > [class^="col-md-"] { width: 100%; } 
     .sidebar-column { margin-top: 2.5rem; } 
@@ -690,15 +746,17 @@ body {
     .post-card-image-top-container, .post-card-image-top-placeholder { height: 180px; }
     .link-card-image-container, .link-card-image-placeholder { height: 130px; }
 
-    .post-card-title-vertical { font-size: 1.05rem; } /* Adjust card titles */
+    .post-card-title-vertical { font-size: 1.05rem; } 
     .link-card-title { font-size: 0.95rem; }
     .post-card-description-vertical, .link-card-description { font-size: 0.78rem; -webkit-line-clamp: 3; line-clamp: 3; min-height: calc(1.6em * 3); }
+    .artistic-title-placeholder-text { font-size: clamp(1.2rem, 3vw, 1.8rem); } /* Adjust for mobile */
     
-    .main-tabs .nav-link { padding: 0.6rem 0.8rem; font-size: 0.95rem; } /* Adjust tabs */
+    .main-tabs .nav-link { padding: 0.6rem 0.8rem; font-size: 0.95rem; } 
     .footer { text-align: center; }
     .footer .text-md-end { text-align: center !important; margin-top: 0.8rem; }
 
     .post-hero-header { min-height: var(--post-hero-min-height, 25vh); padding: 2.5rem 1rem 2rem 1rem; }
-    .post-hero-title { font-size: clamp(1.5rem, 4.5vw, 2.2rem); } /* Adjust hero title */
+    .post-hero-title { font-size: clamp(1.5rem, 4.5vw, 2.2rem); } 
     .post-hero-meta { font-size: 0.8rem; }
 }
+
