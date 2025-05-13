@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded',function(){
         html=replaceImagePaths(html,filePath);
         if(postBodyElement) postBodyElement.innerHTML=html;
 
+        // 这行是关键，它会调用 PrismJS 对 postBodyElement 内的所有代码块进行高亮
         if(postBodyElement) Prism.highlightAllUnder(postBodyElement);
         if(postBodyElement) addCopyButtons(postBodyElement);
         if(postBodyElement && tocListElement) generateTableOfContents(postBodyElement, tocListElement);
