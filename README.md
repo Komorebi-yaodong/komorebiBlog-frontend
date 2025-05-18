@@ -111,6 +111,7 @@ https://komorebi.001412.xyz
         //                                          ^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^ ^^^^
         //                                          你的GitHub用户名  内容仓库名     分支名(通常是main)
         ```
+    如果部署到github pages，可以使用对应的pages地址
 3.  创建一个**新的 GitHub 仓库** (例如 `your-username/myBlogSite`) 用于托管**博客前端代码**。
 4.  将本地修改后的前端代码（包括 `index.html`, `post.html`, `css/`, `js/` 目录等）推送到这个新仓库 (`myBlogSite`)。
 5.  登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)。

@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const linksAuthorsContainer = document.getElementById('links-authors-sidebar');
     const heroElement = document.querySelector('.hero');
 
-    const repoUrl = 'https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main';
+    // 部署了pages之后：https://komorebi-yaodong.github.io/komorebiBlog
+    // 默认使用：https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
+    const repoUrl = 'https://komorebi-yaodong.github.io/komorebiBlog';
     const scrollThreshold = 50;
 
     let originalPostsData = [];
