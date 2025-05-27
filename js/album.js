@@ -8,9 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalCloseButton = document.querySelector('.photo-modal-close');
     const shallowerLayerBtn = document.getElementById('shallower-layer-btn');
     const deeperLayerBtn = document.getElementById('deeper-layer-btn');
+    const photoNavControls = document.querySelector('.photo-navigation-controls');
+
 
     const repoUrl = 'https://komorebi-yaodong.github.io/komorebiBlog';
-    const PHOTO_JSON_PATH = '/photos.json';
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const albumPath = urlParams.get('path');
+    const albumName = decodeURIComponent(urlParams.get('name') || "相册");
+
+    document.title = `${albumName} - Komorebi's Blog`;
+
+    if (!albumPath) {
+        if (loadingIndicator) {
+            loadingIndicator.innerHTML = `<div class="text-center mt-5">
+                                            <p class='text-danger h4'>错误：未指定相册路径。</p>
+                                            <a href='albums.html' class='btn btn-primary mt-3'>返回相册集</a>
+                                          </div>`;
+            loadingIndicator.style.display = 'block';
+        }
+        if (photoNavControls) photoNavControls.style.display = 'none';
+        console.error("Album path not specified in URL.");
+        return;
+    }
+
 
     const PHOTOS_PER_ROW_TARGET = 4;
     const MAX_ROWS_PER_LAYER = 3;
@@ -47,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init3D() {
         if (!container || !shallowerLayerBtn || !deeperLayerBtn) {
-            if (loadingIndicator) loadingIndicator.innerHTML = "<p>Page init error.</p>";
+            if (loadingIndicator) loadingIndicator.innerHTML = "<p class='text-center mt-5 text-danger'>页面初始化错误。</p>";
             return;
         }
 
@@ -80,13 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadPhotosAndSetupScene() {
         try {
-            const response = await fetch(`${repoUrl}${PHOTO_JSON_PATH}`, { cache: "no-cache" });
-            if (!response.ok) throw new Error(`Failed to fetch photo list (${response.status})`);
+            const fetchUrl = `${repoUrl}/${albumPath.startsWith('/') ? albumPath.substring(1) : albumPath}`;
+            const response = await fetch(fetchUrl, { cache: "no-cache" });
+            if (!response.ok) throw new Error(`获取相册照片列表失败 (${response.status}) <br/><small>路径: ${albumPath}</small>`);
             
             const rawPhotos = await response.json();
             if (!rawPhotos || rawPhotos.length === 0) {
-                if (loadingIndicator) loadingIndicator.innerHTML = "<p class='text-muted'>No photos to display.</p>";
+                if (loadingIndicator) loadingIndicator.innerHTML = `<p class='text-muted text-center mt-5 lead'>此相册中没有照片。<br><a href='albums.html' class='btn btn-secondary mt-3 btn-sm'>返回相册集</a></p>`;
                 updateNavButtons();
+                if (photoNavControls) photoNavControls.style.display = 'none';
                 return;
             }
 
@@ -99,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentFocusedLayerIndex = 0;
                 setCameraFocusForLayer(currentFocusedLayerIndex, true);
             } else {
+                // This case should be covered by "rawPhotos.length === 0" or if createLayersFromPhotos fails to add any.
                 targetCameraZ = currentCameraZ = CAMERA_DEFAULT_VIEW_Z_OFFSET;
                 targetLookAtZ = currentLookAtZ = 0;
                 camera.position.set(0, 0, currentCameraZ);
@@ -106,13 +130,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             updateNavButtons();
+            if (photoNavControls && layers.length > 0) photoNavControls.style.display = 'flex'; // Show controls if photos exist
+            else if (photoNavControls) photoNavControls.style.display = 'none';
+
             if (loadingIndicator) loadingIndicator.style.display = 'none';
             animate();
 
         } catch (error) {
-            console.error("Error loading photos:", error);
-            if (loadingIndicator) loadingIndicator.innerHTML = `<p class="text-danger">Error loading photos: ${error.message}</p>`;
+            console.error("Error loading photos for album:", error);
+            if (loadingIndicator) loadingIndicator.innerHTML = `<div class="alert alert-danger text-center mt-5">
+                                                                    <p class="h5">加载照片时出错:</p>
+                                                                    <p class="mb-0">${error.message}</p>
+                                                                    <a href='albums.html' class='btn btn-primary mt-3'>返回相册集</a>
+                                                                </div>`;
             updateNavButtons();
+            if (photoNavControls) photoNavControls.style.display = 'none';
         }
     }
 
@@ -182,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     try {
                         const texture = await textureLoader.loadAsync(imageUrl);
-                        texture.encoding = THREE.sRGBEncoding; // Explicitly set texture encoding
+                        texture.encoding = THREE.sRGBEncoding; 
                         const aspectRatio = texture.image.width / texture.image.height || 1;
                         
                         const planeHeight = PHOTO_BASE_HEIGHT;
@@ -204,32 +236,41 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         currentX += planeWidth/2;
                         if (c < numPhotosThisRowCanFit - 1) {
-                            const nextPhotoData = photosToProcessForDepthLayer[photosActuallyAddedToLayer];
-                            const nextTexture = await textureLoader.loadAsync(resolveImageUrl(nextPhotoData.image));
-                            nextTexture.encoding = THREE.sRGBEncoding; // Also for pre-loaded next texture
-                            const nextAspectRatio = nextTexture.image.width / nextTexture.image.height || 1;
-                            const nextPlaneWidth = PHOTO_BASE_HEIGHT * nextAspectRatio;
-                            currentX += (planeWidth / 2 * (PHOTO_ASPECT_RATIO_SPACING_FACTOR - 1)) + (nextPlaneWidth / 2);
+                            const nextPhotoData = photosToProcessForDepthLayer[photosActuallyAddedToLayer]; // This should be the next photo
+                             if(nextPhotoData && nextPhotoData.image) { // Check if nextPhotoData and its image exist
+                                const nextTexture = await textureLoader.loadAsync(resolveImageUrl(nextPhotoData.image));
+                                nextTexture.encoding = THREE.sRGBEncoding; 
+                                const nextAspectRatio = nextTexture.image.width / nextTexture.image.height || 1;
+                                const nextPlaneWidth = PHOTO_BASE_HEIGHT * nextAspectRatio;
+                                currentX += (planeWidth / 2 * (PHOTO_ASPECT_RATIO_SPACING_FACTOR - 1)) + (nextPlaneWidth / 2);
+                            } else {
+                                // If there's no next photo, just add spacing based on current photo
+                                currentX += (planeWidth / 2 * (PHOTO_ASPECT_RATIO_SPACING_FACTOR - 1));
+                            }
                         }
                     } catch (e) {
                         console.warn(`Could not load image ${imageUrl}:`, e);
-                        photosActuallyAddedToLayer++;
+                        // Increment photosActuallyAddedToLayer even on error to advance through the photo list
+                        // and prevent infinite loops if an image consistently fails.
+                        photosActuallyAddedToLayer++; 
                     }
                 }
-                if (photosInThisRow === 0 && r > 0) {
-                    currentYForRowBlock += (PHOTO_BASE_HEIGHT * PHOTO_VERTICAL_SPACING_FACTOR);
-                    break;
+                if (photosInThisRow === 0 && r > 0) { // No photos could be added to this row, break row loop.
+                    currentYForRowBlock += (PHOTO_BASE_HEIGHT * PHOTO_VERTICAL_SPACING_FACTOR); // Revert Y decrement
+                    break; 
                 }
             }
             if (layerPhotoMeshes.length > 0) {
                 const box = new THREE.Box3().setFromObject(layerGroup);
                 const center = new THREE.Vector3();
                 box.getCenter(center);
-                layerGroup.position.y = -center.y;
+                layerGroup.position.y = -center.y; // Center the entire layer group vertically
             }
 
             layers.push({ z: currentLayerZ, group: layerGroup, photosInLayer: photosActuallyAddedToLayer });
             photoIndex += photosActuallyAddedToLayer;
+            // If no photos were added to this layer but there are still photos left,
+            // advance photoIndex to prevent an infinite loop (e.g., if all remaining photos fail to load).
             if (photosActuallyAddedToLayer === 0 && photoIndex < allSortedPhotos.length) {
                  photoIndex = Math.min(photoIndex + maxPhotosForThisDepthLayer, allSortedPhotos.length);
             }
@@ -238,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resolveImageUrl(path) {
+        if (!path) return ''; // Handle undefined or null path
         if (!path.startsWith('http://') && !path.startsWith('https://') && !path.startsWith('data:')) {
             return `${repoUrl}/${path.replace(/^\.?\//, '')}`;
         }
@@ -286,32 +328,37 @@ document.addEventListener('DOMContentLoaded', () => {
         camera.lookAt(currentLookAtX, currentLookAtY, currentLookAtZ);
         
         updateLayerVisibility();
-        renderer.render(scene, camera);
+        if (renderer && scene && camera) renderer.render(scene, camera); // Ensure renderer is initialized
     }
 
     function updateLayerVisibility() {
-        if (!layers.length) return;
+        if (!layers.length || !camera) return; // Add camera check
         layers.forEach(layer => {
-            layer.group.visible = layer.z < currentCameraZ - CULLING_BEHIND_CAMERA_OFFSET;
+            if (layer.group) { // Check if group exists
+                layer.group.visible = layer.z < currentCameraZ - CULLING_BEHIND_CAMERA_OFFSET;
+            }
         });
     }
 
     function updateNavButtons() {
+        if (!shallowerLayerBtn || !deeperLayerBtn) return;
         shallowerLayerBtn.disabled = (layers.length === 0 || currentFocusedLayerIndex === 0);
         deeperLayerBtn.disabled = (layers.length === 0 || currentFocusedLayerIndex >= layers.length - 1);
     }
 
     function setupEventListeners() {
         window.addEventListener('resize', onWindowResize, false);
-        container.addEventListener('wheel', onMouseWheel, { passive: false });
-        container.addEventListener('click', onClick, false);
+        if (container) { // Check if container exists before adding event listeners
+           container.addEventListener('wheel', onMouseWheel, { passive: false });
+           container.addEventListener('click', onClick, false);
+        }
         
-        shallowerLayerBtn.addEventListener('click', () => {
+        if (shallowerLayerBtn) shallowerLayerBtn.addEventListener('click', () => {
             if (currentFocusedLayerIndex > 0) {
                 setCameraFocusForLayer(currentFocusedLayerIndex - 1);
             }
         });
-        deeperLayerBtn.addEventListener('click', () => {
+        if (deeperLayerBtn) deeperLayerBtn.addEventListener('click', () => {
             if (currentFocusedLayerIndex < layers.length - 1) {
                 setCameraFocusForLayer(currentFocusedLayerIndex + 1);
             }
@@ -331,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onMouseWheel(event) {
-        if (!controlsEnabled || layers.length === 0) return;
+        if (!controlsEnabled || layers.length === 0 || !camera || !renderer) return; // Add camera/renderer checks
         event.preventDefault();
 
         const delta = event.deltaY * (event.deltaMode === 1 ? 33 : 1);
@@ -371,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onClick(event) {
-        if (!controlsEnabled) return;
+        if (!controlsEnabled || !camera || !renderer) return; // Add camera/renderer checks
         event.preventDefault();
 
         mouseNDC.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
@@ -440,5 +487,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof initializeDynamicBackgrounds === 'function') {
         initializeDynamicBackgrounds(repoUrl);
     }
-    init3D();
+    
+    // Only initialize 3D if albumPath is valid
+    if (albumPath) {
+        init3D();
+    }
 });

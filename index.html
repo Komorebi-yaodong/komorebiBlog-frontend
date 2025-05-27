@@ -46,7 +46,13 @@
                                 <i class="fas fa-link"></i> 网站导航
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation"><a class="nav-link" href="photos.html">照片墙</a></li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="albums-tab" data-bs-toggle="tab"
+                                data-bs-target="#albums-tab-pane" type="button" role="tab" aria-controls="albums-tab-pane"
+                                aria-selected="false">
+                                <i class="far fa-images"></i> 相册集
+                            </button>
+                        </li>
                     </ul>
 
                     <div class="tab-content" id="contentTabsContent">
@@ -109,6 +115,34 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="tab-pane fade" id="albums-tab-pane" role="tabpanel" aria-labelledby="albums-tab" tabindex="0">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div id="albums-list-content" class="albums-grid">
+                                        <div class="loading">
+                                            <div class="spinner"></div>
+                                            <p>正在加载相册列表...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                     <div class="sidebar-column">
+                                        <div id="albums-authors-sidebar" class="sidebar-section author-sidebar-section mb-4">
+                                            <div class="loading-placeholder p-3 text-center">
+                                                <div class="spinner-small"></div>
+                                                <p class="small mb-0 ms-2 d-inline-block">作者信息加载中...</p>
+                                            </div>
+                                        </div>
+                                         <div class="sidebar-section" id="albums-info-sidebar">
+                                            <h5 class="sidebar-section-title">相册说明</h5>
+                                            <p class="small text-muted p-2 mb-0">点击相册封面即可进入浏览该相册内的所有图片。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -119,7 +153,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p>&copy; 2025 Komorebi's Blog. All rights reserved.</p>
+                    <p>© 2025 Komorebi's Blog. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end footer-social-links">
                     <a href="https://github.com/Komorebi-yaodong" target="_blank" class="social-link">

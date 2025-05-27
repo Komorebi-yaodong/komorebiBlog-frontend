@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded',function(){
                 const parentBase = pathParts.join('/');
                 a = `${repoUrl}/${parentBase}/${a.slice(3)}`;
             }
-            else if(!a.startsWith('/'))a=a.includes('/')?`${repoUrl}/${a}`:`${repoUrl}/figures/${a}`;
+            else if(!a.startsWith('/'))a=a.includes('/')?`${repoUrl}/${a}`:`${repoUrl}/Figures/${a}`;
             else a=`${repoUrl}${a}`;
             return`src="${a}"`;
         });

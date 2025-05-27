@@ -1,24 +1,49 @@
 document.addEventListener('DOMContentLoaded', function () {
     const postsListElement = document.getElementById('posts-list');
     const linksListElement = document.getElementById('links-list');
+    const albumsListContentElement = document.getElementById('albums-list-content'); // Added
     const postsTagsListElement = document.getElementById('posts-tags-list');
     const linksTagsListElement = document.getElementById('links-tags-list');
     const postsAuthorsContainer = document.getElementById('posts-authors-sidebar');
     const linksAuthorsContainer = document.getElementById('links-authors-sidebar');
+    const albumsAuthorsContainer = document.getElementById('albums-authors-sidebar'); // Added
     const heroElement = document.querySelector('.hero');
 
-    // 部署了pages之后：https://komorebi-yaodong.github.io/komorebiBlog
-    // 默认使用：https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
     const repoUrl = 'https://komorebi-yaodong.github.io/komorebiBlog';
     const scrollThreshold = 50;
 
     let originalPostsData = [];
     let originalLinksData = [];
+    let originalAlbumsData = []; // Added
     let authorsData = [];
     let allPostTags = new Set();
     let allLinkTags = new Set();
     let currentPostsFilterTag = null;
     let currentLinksFilterTag = null;
+
+    // Tab activation from URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTabId = urlParams.get('initial_tab');
+    if (initialTabId) {
+        const tabElementButton = document.getElementById(initialTabId); // e.g. albums-tab
+        if (tabElementButton) {
+            // Ensure the target pane ID is correct for Bootstrap 5
+            // The button's data-bs-target should be used, or derive it.
+            // Example: if initialTabId is "albums-tab", target is "#albums-tab-pane"
+            const tabTrigger = new bootstrap.Tab(tabElementButton);
+            tabTrigger.show();
+
+            // Optional: Scroll to tabs if they are below the fold after hero
+            // const tabsContainer = document.getElementById('contentTabs');
+            // if (tabsContainer) {
+            //    tabsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // }
+        }
+        // Clean the URL parameter (optional, good for UX)
+        const newUrl = window.location.pathname + window.location.hash; // Keep hash if any
+        window.history.replaceState({}, document.title, newUrl);
+    }
+
 
     function handleHeroOverlay() {
         if (!heroElement) return;
@@ -38,25 +63,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         
         const authorsTitle = document.createElement('h5');
-        authorsTitle.className = 'sidebar-section-title'; // Re-use existing class for "关于作者" title
+        authorsTitle.className = 'sidebar-section-title';
         authorsTitle.textContent = '关于作者';
         containerElement.appendChild(authorsTitle);
         authorsArray.forEach(author => {
             const authorCard = document.createElement('div');
-            // Added d-flex and flex-column for bootstrap flex layout
             authorCard.className = 'author-card-item p-2 mb-3 d-flex flex-column align-items-center'; 
             let avatarHtml = '';
             if (author.avatar) {
-                // Avatar will be at the top
-                avatarHtml = `<img src="${author.avatar}" alt="${author.name}" class="author-avatar img-fluid rounded-circle mb-2">`;
+                let avatarUrl = author.avatar;
+                if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('data:')) {
+                     avatarUrl = `${repoUrl}/${avatarUrl.replace(/^\.?\//, '')}`;
+                }
+                avatarHtml = `<img src="${avatarUrl}" alt="${author.name}" class="author-avatar img-fluid rounded-circle mb-2">`;
             }
-            // Name below avatar
             let nameHtml = `<h6 class="author-name mb-1 text-center">${author.name}</h6>`;
             
-            // Description/Motto below name
             let descriptionHtml = author.description ? `<p class="author-description small text-muted mb-2 text-center">${author.description}</p>` : '';
-            // Links at the bottom
-            let linksHtml = '<div class="author-contact-links mt-auto text-center">'; // mt-auto to push to bottom if card has varying height, text-center for icons
+            let linksHtml = '<div class="author-contact-links mt-auto text-center">'; 
             if (author.link) {
                 for (const [key, value] of Object.entries(author.link)) {
                     let iconClass = '';
@@ -65,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     else if (value.includes('twitter.com')) iconClass = 'fab fa-twitter';
                     else if (value.includes('linkedin.com')) iconClass = 'fab fa-linkedin';
                     else iconClass = 'fas fa-link';
-                    // Added mx-1 for a bit of horizontal spacing between icons
                     linksHtml += `<a href="${key.toLowerCase() === 'email' ? 'mailto:' + value : value}" target="_blank" rel="noopener noreferrer" class="mx-1" title="${key}"><i class="${iconClass}"></i></a>`;
                 }
             }
@@ -115,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 imageAreaHtml = `<div class="post-card-image-top-container"><img src="${imageUrl}" alt="${post.title}" class="post-card-image-top"></div>`;
             } else {
-                // NEW: Artistic placeholder using the title
                 imageAreaHtml = `<div class="post-card-image-top-placeholder artistic-title-background">
                                     <h3 class="artistic-title-placeholder-text">${post.title}</h3>
                                  </div>`;
@@ -157,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         linksToRender.forEach((link, index) => {
-            const linkElementWrapper = document.createElement('div'); // Wrapper for consistent height if needed
+            const linkElementWrapper = document.createElement('div'); 
             linkElementWrapper.className = 'link-card-wrapper';
 
             const linkElement = document.createElement('a');
@@ -185,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
                              </div>`;
             }
 
-            const descriptionHtml = link.description ? `<p class="link-card-description">${link.description}</p>` : '<p class="link-card-description" style="min-height: 2.8em;"></p>'; // ensure min height
+            const descriptionHtml = link.description ? `<p class="link-card-description">${link.description}</p>` : '<p class="link-card-description" style="min-height: 2.8em;"></p>';
             
             const tagsHtml = link.tag && link.tag.length > 0 
                 ? `<div class="card-tags">${link.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
@@ -210,6 +232,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // New function to display albums in index.html tab
+    function displayAlbums(albumsToRender) {
+        if (!albumsListContentElement) return;
+        albumsListContentElement.innerHTML = ''; // Clear loading state
+        // The class 'albums-grid' is already on the container element in index.html
+
+        if (!albumsToRender || albumsToRender.length === 0) {
+            albumsListContentElement.innerHTML = `<div class="col-12 text-center p-5"><p class="text-muted lead">暂无相册。</p></div>`;
+            return;
+        }
+
+        albumsToRender.forEach((album, index) => {
+            const albumCardAnchor = document.createElement('a');
+            albumCardAnchor.href = `album.html?path=${encodeURIComponent(album.path)}&name=${encodeURIComponent(album.name)}`;
+            albumCardAnchor.className = 'album-card'; // Uses styles from main.css
+            albumCardAnchor.style.animationDelay = `${index * 0.05}s`;
+
+            let imageUrl = album.image;
+            if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+                imageUrl = `${repoUrl}/${imageUrl.replace(/^\.?\//, '')}`;
+            } else if (!imageUrl) {
+                imageUrl = ''; // Trigger placeholder
+            }
+            
+            const imageAreaHtml = imageUrl 
+                ? `<div class="album-card-image-top-container"><img src="${imageUrl}" alt="${album.name}" class="album-card-image-top"></div>`
+                : `<div class="album-card-image-top-placeholder d-flex align-items-center justify-content-center">
+                       <i class="far fa-images fa-3x text-muted"></i>
+                   </div>`;
+
+            albumCardAnchor.innerHTML = `
+                ${imageAreaHtml}
+                <div class="album-card-content">
+                    <h5 class="album-card-title">${album.name}</h5>
+                </div>
+            `;
+            albumsListContentElement.appendChild(albumCardAnchor);
+        });
+    }
+
+
     function extractAllTags() {
         allPostTags.clear();
         allLinkTags.clear();
@@ -223,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 link.tag.forEach(t => allLinkTags.add(t));
             }
         });
+        // Albums currently don't have tags in this setup
     }
 
     function renderTagSidebar(type, tagsSet, clickHandler, listElement, currentFilter) {
@@ -304,9 +368,13 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`${repoUrl}/author.json`, { cache: "no-cache" }).then(res => {
             if (!res.ok) throw new Error(`获取作者信息失败 (${res.status})`);
             return res.json();
-        }).catch(err => { console.error("Fetch authors failed:", err); return null; })
+        }).catch(err => { console.error("Fetch authors failed:", err); return null; }),
+        fetch(`${repoUrl}/albums.json`, { cache: "no-cache" }).then(res => { // Added albums fetch
+            if (!res.ok) throw new Error(`获取相册列表失败 (${res.status})`);
+            return res.json();
+        }).catch(err => { console.error("Fetch albums failed:", err); return null; })
     ])
-    .then(([posts, links, authors]) => {
+    .then(([posts, links, authors, albums]) => { // Added albums to destructuring
         if (posts) {
             originalPostsData = sortPosts(posts);
         } else {
@@ -322,20 +390,31 @@ document.addEventListener('DOMContentLoaded', function () {
         if (authors) {
             authorsData = authors;
         }
+
+        if (albums) { // Process albums data
+            originalAlbumsData = albums;
+        } else {
+            if (albumsListContentElement) albumsListContentElement.innerHTML = `<div class="error-message alert alert-warning col-12"><p>无法加载相册列表。</p></div>`;
+        }
         
         extractAllTags();
 
+        // Display content for Posts tab
         displayPosts(originalPostsData);
         renderTagSidebar('posts', allPostTags, handlePostTagClick, postsTagsListElement, currentPostsFilterTag);
         if (postsAuthorsContainer) displayAuthors(authorsData, postsAuthorsContainer);
 
-
+        // Display content for Links tab
         displayLinks(originalLinksData);
         renderTagSidebar('links', allLinkTags, handleLinkTagClick, linksTagsListElement, currentLinksFilterTag);
         if (linksAuthorsContainer) displayAuthors(authorsData, linksAuthorsContainer);
 
+        // Display content for Albums tab
+        displayAlbums(originalAlbumsData); // Call new display function
+        if (albumsAuthorsContainer) displayAuthors(authorsData, albumsAuthorsContainer); // Display authors in albums sidebar
 
-        if (!posts && !links && !authors) { // update condition
+
+        if (!posts && !links && !authors && !albums) {
             const contentWrapper = document.querySelector('.main-content .content-wrapper');
             if (contentWrapper) {
                 contentWrapper.innerHTML = `<div class="error-message alert alert-danger"><p>未能加载任何内容。请检查网络连接和仓库配置。</p></div>`;
@@ -357,7 +436,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const mainContent = document.querySelector('.main-content');
             const targetScroll = mainContent ? mainContent.offsetTop : window.innerHeight;
             window.scrollTo({
-                top: targetScroll - 60,
+                top: targetScroll - 60, // Adjust for navbar height
                 behavior: 'smooth'
             });
         });
