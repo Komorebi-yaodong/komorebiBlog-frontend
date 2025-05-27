@@ -6,9 +6,10 @@ document.addEventListener('DOMContentLoaded',function(){
     const postHeroHeaderElement = document.getElementById('post-hero-header');
     const postHeaderTagsElement = document.getElementById('post-header-tags');
 
-    // 部署了pages之后：https://komorebi-yaodong.github.io/komorebiBlog
     // 默认使用：https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
-    const repoUrl='https://komorebi-yaodong.github.io/komorebiBlog';
+    // 部署了pages之后：https://komorebi-yaodong.github.io/komorebiBlog
+    // 反代：https://mypages.001412.xyz/komorebiBlog
+    const repoUrl = 'https://mypages.001412.xyz/komorebiBlog';
     const filePath=new URLSearchParams(window.location.search).get('file');
 
     if (typeof initializeDynamicBackgrounds === 'function') {

@@ -9,7 +9,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const albumsAuthorsContainer = document.getElementById('albums-authors-sidebar'); // Added
     const heroElement = document.querySelector('.hero');
 
-    const repoUrl = 'https://komorebi-yaodong.github.io/komorebiBlog';
+    // 默认使用：https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
+    // 部署了pages之后：https://komorebi-yaodong.github.io/komorebiBlog
+    // 反代：https://mypages.001412.xyz/komorebiBlog
+    const repoUrl = 'https://mypages.001412.xyz/komorebiBlog';
     const scrollThreshold = 50;
 
     let originalPostsData = [];

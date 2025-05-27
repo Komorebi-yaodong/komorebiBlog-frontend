@@ -11,7 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoNavControls = document.querySelector('.photo-navigation-controls');
 
 
-    const repoUrl = 'https://komorebi-yaodong.github.io/komorebiBlog';
+    // 默认使用：https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
+    // 部署了pages之后：https://komorebi-yaodong.github.io/komorebiBlog
+    // 反代：https://mypages.001412.xyz/komorebiBlog
+    const repoUrl = 'https://mypages.001412.xyz/komorebiBlog';
     
     const urlParams = new URLSearchParams(window.location.search);
     const albumPath = urlParams.get('path');
