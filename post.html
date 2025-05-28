@@ -50,6 +50,11 @@
     </div>
 
     <div class="container main-content post-page-content">
+        <div id="mobile-toc-button-container" class="d-lg-none mb-3">
+            <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas">
+                <i class="fas fa-list-ul"></i> 文章大纲
+            </button>
+        </div>
         <div class="row">
             <div class="col-lg-9">
                 <div class="content-wrapper actual-post-content-wrapper">
@@ -68,7 +73,7 @@
                     </article>
                 </div>
             </div>
-            <div class="col-lg-3">
+            <div class="col-lg-3 d-none d-lg-block">
                 <div id="toc-container" class="toc-sidebar sticky-top">
                     <h5 class="toc-title">文章大纲</h5>
                     <nav id="toc-nav">
@@ -90,14 +95,32 @@
         </div>
     </footer>
 
+    <div id="image-lightbox" class="lightbox">
+        <span class="lightbox-close">×</span>
+        <img class="lightbox-content" id="lightbox-img">
+        <div id="lightbox-caption"></div>
+    </div>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">文章大纲</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <nav id="toc-nav-mobile">
+                <ul id="toc-list-mobile" class="list-unstyled">
+                    <li class="text-muted small">正在生成大纲...</li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/background-switcher.js"></script>
     <script src="js/post.js"></script>
-    <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c4ebc2c7db394cb2ae1830b295a8fd7c"}'></script>
-    <!-- End Cloudflare Web Analytics -->
 </body>
 </html>
