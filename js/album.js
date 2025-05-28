@@ -40,8 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_ROWS_PER_LAYER = 3;
     const LAYER_DEPTH_SPACING = 35;
     const PHOTO_BASE_HEIGHT = 3.0;
-    const PHOTO_ASPECT_RATIO_SPACING_FACTOR = 1.25;
-    const PHOTO_VERTICAL_SPACING_FACTOR = 1.25;
+    // PHOTO_ASPECT_RATIO_SPACING_FACTOR: Defines the space between photo centers relative to their half-widths.
+    // If 1.0, centers are adjacent. If > 1.0, there's a gap.
+    // Example: If 1.25, gap between photo A and B is (widthA/2 * 0.25) + (widthB/2 * 0.25)
+    const PHOTO_ASPECT_RATIO_SPACING_FACTOR = 1.25; 
+    const PHOTO_VERTICAL_SPACING_FACTOR = 1.25; // Multiplier for vertical spacing based on PHOTO_BASE_HEIGHT
+
+    // Define a fixed aspect ratio for the layout slots
+    const FIXED_SLOT_ASPECT_RATIO = 4 / 3; // Common aspect ratio (e.g., 4:3, 16:9, or 1.0 for square)
+    const FIXED_SLOT_WIDTH = PHOTO_BASE_HEIGHT * FIXED_SLOT_ASPECT_RATIO;
+
 
     const CAMERA_FOV = 60;
     const CAMERA_DEFAULT_VIEW_Z_OFFSET = PHOTO_BASE_HEIGHT * MAX_ROWS_PER_LAYER * PHOTO_VERTICAL_SPACING_FACTOR * 1.3;
@@ -54,8 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const CULLING_BEHIND_CAMERA_OFFSET = 1;
 
     let scene, camera, renderer, raycaster, mouseNDC;
-    let photoMeshes = [];
-    let layers = [];
+    let photoMeshes = []; // Holds all photo meshes for raycasting
+    let layers = []; // Holds layer data {z, group, photosInLayer}
 
     let currentFocusedLayerIndex = 0;
     let targetCameraX, currentCameraX;
@@ -84,9 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderer.outputEncoding = THREE.sRGBEncoding; 
         container.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); 
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); 
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4); 
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); 
         directionalLight.position.set(5, 10, 30);
         scene.add(directionalLight);
 
@@ -119,13 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const sortedPhotos = rawPhotos.map((photo, index) => ({ ...photo, originalIndex: index }));
             sortPhotosByTimeAndIndex(sortedPhotos);
             
-            await createLayersFromPhotos(sortedPhotos);
+            createLayersFromPhotos(sortedPhotos); // This is now synchronous for layout
 
             if (layers.length > 0) {
                 currentFocusedLayerIndex = 0;
                 setCameraFocusForLayer(currentFocusedLayerIndex, true);
             } else {
-                // This case should be covered by "rawPhotos.length === 0" or if createLayersFromPhotos fails to add any.
                 targetCameraZ = currentCameraZ = CAMERA_DEFAULT_VIEW_Z_OFFSET;
                 targetLookAtZ = currentLookAtZ = 0;
                 camera.position.set(0, 0, currentCameraZ);
@@ -133,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             updateNavButtons();
-            if (photoNavControls && layers.length > 0) photoNavControls.style.display = 'flex'; // Show controls if photos exist
+            if (photoNavControls && layers.length > 0) photoNavControls.style.display = 'flex';
             else if (photoNavControls) photoNavControls.style.display = 'none';
 
             if (loadingIndicator) loadingIndicator.style.display = 'none';
@@ -163,126 +170,150 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function createLayersFromPhotos(allSortedPhotos) {
+    function createLayersFromPhotos(allSortedPhotos) {
         const textureLoader = new THREE.TextureLoader();
         let photoIndex = 0;
         let currentLayerZ = 0;
+
+        const placeholderMaterialTemplate = new THREE.MeshLambertMaterial({
+            color: 0x555555, 
+            side: THREE.FrontSide,
+            transparent: true,
+            opacity: 0.3,
+        });
 
         while (photoIndex < allSortedPhotos.length) {
             const layerGroup = new THREE.Group();
             layerGroup.position.z = currentLayerZ;
             scene.add(layerGroup);
             
-            let layerPhotoMeshes = [];
-            const maxPhotosForThisDepthLayer = MAX_ROWS_PER_LAYER * PHOTOS_PER_ROW_TARGET;
-            const photosToProcessForDepthLayer = allSortedPhotos.slice(photoIndex, photoIndex + maxPhotosForThisDepthLayer);
-            let photosActuallyAddedToLayer = 0;
-            let currentYForRowBlock = 0;
+            let photosPlacedInThisLayer = 0;
+            let currentYForRowBlock = 0; // Y position for the current row, relative to layerGroup center
 
-            for (let r = 0; r < MAX_ROWS_PER_LAYER && photosActuallyAddedToLayer < photosToProcessForDepthLayer.length; r++) {
-                let currentX = 0;
-                let photosInThisRow = 0;
-                
-                const startIndexForRow = photosActuallyAddedToLayer;
+            for (let r = 0; r < MAX_ROWS_PER_LAYER; r++) {
+                const photosInThisRowData = [];
+                for (let c = 0; c < PHOTOS_PER_ROW_TARGET; c++) {
+                    const overallIndex = photoIndex + (r * PHOTOS_PER_ROW_TARGET) + c;
+                    if (overallIndex >= allSortedPhotos.length) break;
+                    // Check if this photo still belongs to the current conceptual layer
+                    if (photosPlacedInThisLayer >= MAX_ROWS_PER_LAYER * PHOTOS_PER_ROW_TARGET) break;
+                    
+                    photosInThisRowData.push(allSortedPhotos[overallIndex]);
+                }
+
+                if (photosInThisRowData.length === 0) break; // No more photos for this layer or row
+
+                // Calculate total width of this row based on fixed slot sizes and spacing
                 let totalWidthOfThisRow = 0;
-                let firstPhotoInRowWidth = 0;
-                let numPhotosThisRowCanFit = 0;
-
-                for (let c_calc = 0; c_calc < PHOTOS_PER_ROW_TARGET; c_calc++) {
-                    const pIdx_calc = startIndexForRow + c_calc;
-                    if (pIdx_calc >= photosToProcessForDepthLayer.length) break;
-                    const photoData_calc = photosToProcessForDepthLayer[pIdx_calc];
-                    try {
-                        const tempTexture = await textureLoader.loadAsync(resolveImageUrl(photoData_calc.image));
-                        const aspectRatio = tempTexture.image.width / tempTexture.image.height || 1;
-                        const pWidth = PHOTO_BASE_HEIGHT * aspectRatio;
-                        totalWidthOfThisRow += pWidth;
-                        if (c_calc < PHOTOS_PER_ROW_TARGET - 1 && (pIdx_calc + 1 < photosToProcessForDepthLayer.length)) {
-                             totalWidthOfThisRow += pWidth * (PHOTO_ASPECT_RATIO_SPACING_FACTOR - 1);
-                        }
-                        if (c_calc === 0) firstPhotoInRowWidth = pWidth;
-                        numPhotosThisRowCanFit++;
-                    } catch(e) { /* skip */ }
-                }
-                currentX = -totalWidthOfThisRow / 2 + firstPhotoInRowWidth / 2;
-                
-                if (r > 0) {
-                    currentYForRowBlock -= (PHOTO_BASE_HEIGHT * PHOTO_VERTICAL_SPACING_FACTOR);
-                }
-
-                for (let c = 0; c < numPhotosThisRowCanFit; c++) {
-                    const currentPhotoOverallIndex = photosActuallyAddedToLayer;
-                    const photoData = photosToProcessForDepthLayer[currentPhotoOverallIndex];
-                    const imageUrl = resolveImageUrl(photoData.image);
-
-                    try {
-                        const texture = await textureLoader.loadAsync(imageUrl);
-                        texture.encoding = THREE.sRGBEncoding; 
-                        const aspectRatio = texture.image.width / texture.image.height || 1;
-                        
-                        const planeHeight = PHOTO_BASE_HEIGHT;
-                        const planeWidth = planeHeight * aspectRatio;
-
-                        const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
-                        const material = new THREE.MeshLambertMaterial({ map: texture, side: THREE.FrontSide });
-                        const mesh = new THREE.Mesh(geometry, material);
-
-                        mesh.position.x = currentX;
-                        mesh.position.y = currentYForRowBlock;
-                        
-                        mesh.userData = { ...photoData, resolvedImageUrl: imageUrl, layerZ: currentLayerZ };
-                        layerGroup.add(mesh);
-                        photoMeshes.push(mesh);
-                        layerPhotoMeshes.push(mesh);
-                        photosActuallyAddedToLayer++;
-                        photosInThisRow++;
-                        
-                        currentX += planeWidth/2;
-                        if (c < numPhotosThisRowCanFit - 1) {
-                            const nextPhotoData = photosToProcessForDepthLayer[photosActuallyAddedToLayer]; // This should be the next photo
-                             if(nextPhotoData && nextPhotoData.image) { // Check if nextPhotoData and its image exist
-                                const nextTexture = await textureLoader.loadAsync(resolveImageUrl(nextPhotoData.image));
-                                nextTexture.encoding = THREE.sRGBEncoding; 
-                                const nextAspectRatio = nextTexture.image.width / nextTexture.image.height || 1;
-                                const nextPlaneWidth = PHOTO_BASE_HEIGHT * nextAspectRatio;
-                                currentX += (planeWidth / 2 * (PHOTO_ASPECT_RATIO_SPACING_FACTOR - 1)) + (nextPlaneWidth / 2);
-                            } else {
-                                // If there's no next photo, just add spacing based on current photo
-                                currentX += (planeWidth / 2 * (PHOTO_ASPECT_RATIO_SPACING_FACTOR - 1));
-                            }
-                        }
-                    } catch (e) {
-                        console.warn(`Could not load image ${imageUrl}:`, e);
-                        // Increment photosActuallyAddedToLayer even on error to advance through the photo list
-                        // and prevent infinite loops if an image consistently fails.
-                        photosActuallyAddedToLayer++; 
+                if (photosInThisRowData.length > 0) {
+                    totalWidthOfThisRow = photosInThisRowData.length * FIXED_SLOT_WIDTH;
+                    if (photosInThisRowData.length > 1) {
+                        // The gap between two adjacent slots (center to center distance minus their widths)
+                        // Distance between centers of slot A and slot B = (widthA/2 * Factor) + (widthB/2 * Factor)
+                        // Since widthA = widthB = FIXED_SLOT_WIDTH, this is FIXED_SLOT_WIDTH * Factor
+                        // Gap = (FIXED_SLOT_WIDTH * Factor) - FIXED_SLOT_WIDTH = FIXED_SLOT_WIDTH * (Factor - 1)
+                        const gapBetweenSlots = FIXED_SLOT_WIDTH * (PHOTO_ASPECT_RATIO_SPACING_FACTOR - 1);
+                        totalWidthOfThisRow += (photosInThisRowData.length - 1) * gapBetweenSlots;
                     }
                 }
-                if (photosInThisRow === 0 && r > 0) { // No photos could be added to this row, break row loop.
-                    currentYForRowBlock += (PHOTO_BASE_HEIGHT * PHOTO_VERTICAL_SPACING_FACTOR); // Revert Y decrement
-                    break; 
+                
+                // Starting X position for the center of the first photo in the row
+                let currentX = -totalWidthOfThisRow / 2 + FIXED_SLOT_WIDTH / 2;
+
+                for (let c = 0; c < photosInThisRowData.length; c++) {
+                    const photoData = photosInThisRowData[c];
+                    const imageUrl = resolveImageUrl(photoData.image);
+
+                    const geometry = new THREE.PlaneGeometry(FIXED_SLOT_WIDTH, PHOTO_BASE_HEIGHT);
+                    const material = placeholderMaterialTemplate.clone();
+                    const mesh = new THREE.Mesh(geometry, material);
+
+                    mesh.position.x = currentX;
+                    mesh.position.y = currentYForRowBlock;
+                    
+                    mesh.userData = { ...photoData, resolvedImageUrl: imageUrl, layerZ: currentLayerZ, isLoading: true, loadError: false };
+                    
+                    layerGroup.add(mesh);
+                    photoMeshes.push(mesh);
+                    photosPlacedInThisLayer++;
+
+                    textureLoader.load(
+                        imageUrl,
+                        (texture) => { // onLoad
+                            texture.encoding = THREE.sRGBEncoding;
+                            mesh.material.map = texture;
+                            mesh.material.color.set(0xffffff); 
+                            mesh.material.opacity = 1; 
+                            
+                            // Adjust texture repeat and offset to fit image into FIXED_SLOT_WIDTH/PHOTO_BASE_HEIGHT plane
+                            texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+                            const imageAspect = texture.image.width / texture.image.height;
+                            const planeAspect = FIXED_SLOT_WIDTH / PHOTO_BASE_HEIGHT; // Same as FIXED_SLOT_ASPECT_RATIO
+
+                            if (imageAspect > planeAspect) { // Image wider than plane (fit height)
+                                texture.repeat.set(planeAspect / imageAspect, 1);
+                                texture.offset.set((1 - (planeAspect / imageAspect)) / 2, 0);
+                            } else { // Image taller than plane (fit width)
+                                texture.repeat.set(1, imageAspect / planeAspect);
+                                texture.offset.set(0, (1 - (imageAspect / planeAspect)) / 2);
+                            }
+                            mesh.material.needsUpdate = true;
+                            mesh.userData.isLoading = false;
+                        },
+                        undefined, // onProgress
+                        (error) => { // onError
+                            console.warn(`Could not load image ${imageUrl} for display:`, error);
+                            mesh.material.color.set(0x701c1c); // Darker red for error indication
+                            mesh.material.opacity = 0.5;
+                            mesh.material.needsUpdate = true;
+                            mesh.userData.isLoading = false;
+                            mesh.userData.loadError = true;
+                        }
+                    );
+                    
+                    // Update currentX for the next photo in the row
+                    if (c < photosInThisRowData.length - 1) {
+                         // Move from center of current slot to center of next slot
+                        currentX += FIXED_SLOT_WIDTH * PHOTO_ASPECT_RATIO_SPACING_FACTOR;
+                    }
+                }
+                currentYForRowBlock -= (PHOTO_BASE_HEIGHT * PHOTO_VERTICAL_SPACING_FACTOR);
+            }
+            
+            // Vertically center the entire layer group
+            if (layerGroup.children.length > 0) {
+                // The Y positions were set from 0 downwards.
+                // currentYForRowBlock is now the Y for the *next* (non-existent) row.
+                // The Y of the last row was currentYForRowBlock + (PHOTO_BASE_HEIGHT * PHOTO_VERTICAL_SPACING_FACTOR)
+                // The total height of the content block:
+                const numActualRows = Math.ceil(photosPlacedInThisLayer / PHOTOS_PER_ROW_TARGET);
+                if (numActualRows > 0) {
+                    const contentHeight = (numActualRows -1) * (PHOTO_BASE_HEIGHT * PHOTO_VERTICAL_SPACING_FACTOR) + PHOTO_BASE_HEIGHT;
+                    // The top of content is at PHOTO_BASE_HEIGHT/2 (from Y=0 row)
+                    // The bottom of content is at -(numActualRows-1)*PHOTO_BASE_HEIGHT*PHOTO_VERTICAL_SPACING_FACTOR - PHOTO_BASE_HEIGHT/2
+                    // Center Y of the content block relative to layerGroup's origin:
+                    const contentCenterY = ( (PHOTO_BASE_HEIGHT/2) + ( -(numActualRows-1)*(PHOTO_BASE_HEIGHT*PHOTO_VERTICAL_SPACING_FACTOR) - PHOTO_BASE_HEIGHT/2 ) ) / 2;
+                    layerGroup.position.y = -contentCenterY;
+
+                    // Alternative using Box3, more robust if row photo counts vary wildly (not the case here though)
+                    // const box = new THREE.Box3().setFromObject(layerGroup);
+                    // const center = new THREE.Vector3();
+                    // if (!box.isEmpty()) {
+                    //     box.getCenter(center);
+                    //     layerGroup.position.y = -center.y; // This center.y is relative to layerGroup's current origin (0,0,0)
+                    // }
                 }
             }
-            if (layerPhotoMeshes.length > 0) {
-                const box = new THREE.Box3().setFromObject(layerGroup);
-                const center = new THREE.Vector3();
-                box.getCenter(center);
-                layerGroup.position.y = -center.y; // Center the entire layer group vertically
-            }
 
-            layers.push({ z: currentLayerZ, group: layerGroup, photosInLayer: photosActuallyAddedToLayer });
-            photoIndex += photosActuallyAddedToLayer;
-            // If no photos were added to this layer but there are still photos left,
-            // advance photoIndex to prevent an infinite loop (e.g., if all remaining photos fail to load).
-            if (photosActuallyAddedToLayer === 0 && photoIndex < allSortedPhotos.length) {
-                 photoIndex = Math.min(photoIndex + maxPhotosForThisDepthLayer, allSortedPhotos.length);
-            }
+            layers.push({ z: currentLayerZ, group: layerGroup, photosInLayer: photosPlacedInThisLayer });
+            photoIndex += photosPlacedInThisLayer;
             currentLayerZ -= LAYER_DEPTH_SPACING;
         }
     }
 
+
     function resolveImageUrl(path) {
-        if (!path) return ''; // Handle undefined or null path
+        if (!path) return ''; 
         if (!path.startsWith('http://') && !path.startsWith('https://') && !path.startsWith('data:')) {
             return `${repoUrl}/${path.replace(/^\.?\//, '')}`;
         }
@@ -331,13 +362,13 @@ document.addEventListener('DOMContentLoaded', () => {
         camera.lookAt(currentLookAtX, currentLookAtY, currentLookAtZ);
         
         updateLayerVisibility();
-        if (renderer && scene && camera) renderer.render(scene, camera); // Ensure renderer is initialized
+        if (renderer && scene && camera) renderer.render(scene, camera);
     }
 
     function updateLayerVisibility() {
-        if (!layers.length || !camera) return; // Add camera check
+        if (!layers.length || !camera) return;
         layers.forEach(layer => {
-            if (layer.group) { // Check if group exists
+            if (layer.group) {
                 layer.group.visible = layer.z < currentCameraZ - CULLING_BEHIND_CAMERA_OFFSET;
             }
         });
@@ -351,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupEventListeners() {
         window.addEventListener('resize', onWindowResize, false);
-        if (container) { // Check if container exists before adding event listeners
+        if (container) {
            container.addEventListener('wheel', onMouseWheel, { passive: false });
            container.addEventListener('click', onClick, false);
         }
@@ -381,10 +412,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onMouseWheel(event) {
-        if (!controlsEnabled || layers.length === 0 || !camera || !renderer) return; // Add camera/renderer checks
+        if (!controlsEnabled || layers.length === 0 || !camera || !renderer) return;
         event.preventDefault();
 
-        const delta = event.deltaY * (event.deltaMode === 1 ? 33 : 1);
+        const delta = event.deltaY * (event.deltaMode === 1 ? 33 : 1); // Normalize wheel delta
         const focusedLayerZ = layers[currentFocusedLayerIndex].z;
         
         const oldDistToLayerPlane = currentCameraZ - focusedLayerZ;
@@ -396,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const newTargetCameraZ = focusedLayerZ + newTargetRelativeDist;
 
+        // Pan camera based on mouse position to zoom towards cursor
         mouseNDC.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
         mouseNDC.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
         
@@ -406,30 +438,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const worldMouseX = intersectionPoint.x;
             const worldMouseY = intersectionPoint.y;
 
+            // Calculate how much the camera needs to shift to keep the intersectionPoint under the mouse
             targetCameraX = worldMouseX - ( (worldMouseX - currentCameraX) / oldDistToLayerPlane ) * newTargetRelativeDist;
             targetCameraY = worldMouseY - ( (worldMouseY - currentCameraY) / oldDistToLayerPlane ) * newTargetRelativeDist;
-            targetLookAtX = targetCameraX;
+            targetLookAtX = targetCameraX; // Keep camera looking parallel to Z-axis relative to its new X,Y
             targetLookAtY = targetCameraY;
-        } else {
+        } else { // Fallback if ray doesn't intersect (e.g., looking away)
             targetCameraX = currentCameraX * (newTargetRelativeDist / oldDistToLayerPlane);
             targetCameraY = currentCameraY * (newTargetRelativeDist / oldDistToLayerPlane);
             targetLookAtX = targetCameraX;
             targetLookAtY = targetCameraY;
         }
         targetCameraZ = newTargetCameraZ;
-        targetLookAtZ = focusedLayerZ;
+        targetLookAtZ = focusedLayerZ; // Always look at the plane of the focused layer
     }
 
     function onClick(event) {
-        if (!controlsEnabled || !camera || !renderer) return; // Add camera/renderer checks
+        if (!controlsEnabled || !camera || !renderer) return;
         event.preventDefault();
 
         mouseNDC.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
         mouseNDC.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
 
         raycaster.setFromCamera(mouseNDC, camera);
-        const visiblePhotoMeshes = photoMeshes.filter(m => m.parent && m.parent.visible && m.visible);
-        const intersects = raycaster.intersectObjects(visiblePhotoMeshes);
+        // Only consider meshes that are loaded (not placeholders or errors) and visible
+        const clickablePhotoMeshes = photoMeshes.filter(m => 
+            m.parent && m.parent.visible && m.visible && 
+            m.userData && !m.userData.isLoading && !m.userData.loadError
+        );
+        const intersects = raycaster.intersectObjects(clickablePhotoMeshes);
 
         if (intersects.length > 0) {
             const clickedObject = intersects[0].object;
@@ -441,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!dateString) return null;
         try {
             const date = new Date(dateString);
-            if (isNaN(date.getTime())) return null;
+            if (isNaN(date.getTime())) return null; // Invalid date
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
@@ -477,16 +514,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         modalElement.classList.add('show');
         controlsEnabled = false;
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
 
     function hideModal() {
         if (!modalElement) return;
         modalElement.classList.remove('show');
         controlsEnabled = true;
-        document.body.style.overflow = '';
+        document.body.style.overflow = ''; // Restore scrolling
     }
 
+    // Initialize dynamic backgrounds if the function exists (from background-switcher.js)
     if (typeof initializeDynamicBackgrounds === 'function') {
         initializeDynamicBackgrounds(repoUrl);
     }
