@@ -8,7 +8,10 @@ document.addEventListener('DOMContentLoaded',function(){
     const mobileTocButtonContainer = document.getElementById('mobile-toc-button-container');
     const mainNavbar = document.querySelector('.navbar.sticky-top');
 
-    const repoUrl = 'https://github.001412.xyz/Komorebi-yaodong/komorebiBlog/raw/main';
+    // 默认使用：https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
+    // 部署了pages之后：https://komorebi-yaodong.github.io/komorebiBlog
+    // 反代：https://mypages.001412.xyz/komorebiBlog
+    const repoUrl = 'https://komorebi-yaodong.github.io/komorebiBlog';
     const filePath=new URLSearchParams(window.location.search).get('file');
 
     if (typeof initializeDynamicBackgrounds === 'function') {
