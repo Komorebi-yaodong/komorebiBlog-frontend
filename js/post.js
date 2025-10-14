@@ -327,6 +327,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
     function addCopyButtons(container){
         container.querySelectorAll('pre').forEach(preElement => {
+            // If already wrapped, skip
             if (preElement.parentElement && preElement.parentElement.classList.contains('code-block-wrapper')) {
                 return;
             }
@@ -337,6 +338,7 @@ document.addEventListener('DOMContentLoaded',function(){
             const wrapper = document.createElement('div');
             wrapper.className = 'code-block-wrapper';
             
+            // Replace pre with wrapper and move pre inside it
             if (preElement.parentNode) {
                 preElement.parentNode.insertBefore(wrapper, preElement);
             }
@@ -349,24 +351,26 @@ document.addEventListener('DOMContentLoaded',function(){
             btn.title = '复制代码';
             
             btn.addEventListener('click', () => {
-                navigator.clipboard.writeText(codeContentElement.textContent || "").then(() => {
-                    btn.innerHTML = '<i class="fas fa-check"></i>';
-                    btn.setAttribute('aria-label','已复制');
-                    btn.title = '已复制!';
-                    setTimeout(() => {
-                        btn.innerHTML = '<i class="far fa-copy"></i>';
-                        btn.setAttribute('aria-label','复制代码');
-                        btn.title = '复制代码';
-                    }, 2000);
-                }).catch(() => {
-                    btn.innerHTML = '<i class="fas fa-times"></i>';
-                    btn.title = '复制失败';
-                    setTimeout(() => {
-                        btn.innerHTML = '<i class="far fa-copy"></i>';
-                        btn.title = '复制代码';
-                    }, 2000);
-                });
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(codeContentElement.textContent || "").then(() => {
+                        btn.innerHTML = '<i class="fas fa-check"></i>';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="far fa-copy"></i>';
+                            btn.classList.remove('copied');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                        btn.innerHTML = '<i class="fas fa-times"></i>';
+                        btn.classList.add('error');
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="far fa-copy"></i>';
+                            btn.classList.remove('error');
+                        }, 2000);
+                    });
+                }
             });
+            // The wrapper will now contain the button
             wrapper.appendChild(btn);
         });
     }

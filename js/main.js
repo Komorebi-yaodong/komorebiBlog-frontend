@@ -111,18 +111,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayPosts(postsToRender) {
         if (!postsListElement) return;
         postsListElement.innerHTML = '';
-        postsListElement.className = 'posts-list post-cards-grid';
+        postsListElement.className = 'posts-list'; // Simplified class for masonry
         if (postsToRender.length === 0) {
             postsListElement.innerHTML = `<div class="col-12 text-center p-5"><p class="text-muted lead">没有找到匹配 "${currentPostsFilterTag || '任何'}" 标签的文章。</p></div>`;
             return;
         }
-        postsToRender.forEach((post, index) => {
+        postsToRender.forEach(post => {
             const postElementWrapper = document.createElement('div');
             postElementWrapper.className = 'post-card-wrapper';
+            
             const postElement = document.createElement('a');
-            postElement.className = 'post-card-vertical';
             postElement.href = `post.html?file=${encodeURIComponent(post.file)}`;
-            postElement.style.animationDelay = `${index * 0.05}s`;
+            postElement.className = `post-card-vertical ${!post.image ? 'no-image' : ''}`;
+
             let formattedDate = "日期未知";
             if (post.time) {
                 try {
@@ -132,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 } catch (e) { console.error(`Post date format error for ${post.file}:`, e); }
             }
+            
             let imageAreaHtml = '';
             if (post.image) {
                 let imageUrl = post.image;
@@ -141,27 +143,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 imageAreaHtml = `<div class="post-card-image-top-container"><img src="${imageUrl}" alt="${post.title}" class="post-card-image-top"></div>`;
             } else {
-                imageAreaHtml = `<div class="post-card-image-top-placeholder artistic-title-background">
+                imageAreaHtml = `<div class="post-card-image-top-placeholder">
                                     <h3 class="artistic-title-placeholder-text">${post.title}</h3>
-                                 </div>`;
+                                </div>`;
             }
             
             const tagsHtml = post.tag && post.tag.length > 0 
-                ? `<div class="card-tags mt-auto pt-2">${post.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
-                : '<div class="card-tags mt-auto pt-2" style="height: 28px;"></div>'; 
-            let descriptionHtml = '';
-            if (post.description) {
-                descriptionHtml = `<p class="post-card-description-vertical small">${post.description}</p>`;
-            }
+                ? `<div class="card-tags">${post.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
+                : '';
+            
+            let descriptionHtml = post.description ? `<p class="post-card-description-vertical">${post.description}</p>` : '';
+            
             const contentAreaHtml = `
-             <div class="post-card-content-vertical">
-                 <h5 class="post-card-title-vertical mb-2">${post.title}</h5>
-                 ${descriptionHtml}
-                 <div class="post-card-footer-vertical mt-2">
-                    <span class="post-card-date small text-muted"><i class="far fa-calendar-alt me-1"></i>${formattedDate}</span>
-                 </div>
-                 ${tagsHtml}
-             </div>`;
+            <div class="post-card-content-vertical">
+                <h5 class="post-card-title-vertical">${post.title}</h5>
+                <div class="post-card-meta-vertical">
+                    <span class="post-card-date"><i class="far fa-calendar-alt me-1"></i>${formattedDate}</span>
+                </div>
+                ${descriptionHtml}
+                <div class="post-card-footer-vertical">
+                    ${tagsHtml}
+                </div>
+            </div>`;
             
             postElement.innerHTML = imageAreaHtml + contentAreaHtml;
             postElementWrapper.appendChild(postElement);
@@ -173,15 +176,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayLinks(linksToRender) {
         if (!linksListElement) return;
         linksListElement.innerHTML = '';
-        linksListElement.className = 'links-list links-grid-layout';
-
+        linksListElement.className = 'links-list'; // Simplified class for masonry
 
         if (linksToRender.length === 0) {
             linksListElement.innerHTML = `<div class="col-12 text-center p-5"><p class="text-muted lead">没有找到匹配 "${currentLinksFilterTag || '任何'}" 标签的导航。</p></div>`;
             return;
         }
 
-        linksToRender.forEach((link, index) => {
+        linksToRender.forEach(link => {
             const linkElementWrapper = document.createElement('div'); 
             linkElementWrapper.className = 'link-card-wrapper';
 
@@ -194,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function () {
             linkElement.href = targetUrl;
             linkElement.target = '_blank';
             linkElement.rel = 'noopener noreferrer';
-            linkElement.style.animationDelay = `${index * 0.05}s`;
 
             let imageHtml = '';
             if (link.image) {
@@ -205,31 +206,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 imageHtml = `<div class="link-card-image-container"><img src="${imageUrl}" alt="${link.title}" class="link-card-image"></div>`;
             } else {
-                imageHtml = `<div class="link-card-image-placeholder d-flex align-items-center justify-content-center">
-                                <i class="fas fa-link fa-2x text-muted"></i>
-                             </div>`;
+                imageHtml = `<div class="link-card-image-placeholder">
+                                <i class="fas fa-link"></i>
+                            </div>`;
             }
 
-            const descriptionHtml = link.description ? `<p class="link-card-description">${link.description}</p>` : '<p class="link-card-description" style="min-height: 2.8em;"></p>';
+            const descriptionHtml = link.description ? `<p class="link-card-description">${link.description}</p>` : '';
             
             const tagsHtml = link.tag && link.tag.length > 0 
                 ? `<div class="card-tags">${link.tag.map(t => `<span class="tag-badge">${t}</span>`).join(' ')}</div>` 
-                : '<div class="card-tags" style="height: 28px;"></div>';
+                : '';
 
             linkElement.innerHTML = `
                 ${imageHtml}
                 <div class="link-card-content">
-                    <div class="link-card-main-info">
-                        <h4 class="link-card-title">${link.title}</h4>
-                        ${descriptionHtml}
-                    </div>
-                    <div class="link-card-bottom-info mt-auto">
-                        ${tagsHtml}
-                        <div class="link-card-meta">
-                            <span class="link-card-url"><i class="fas fa-external-link-alt me-1"></i>${link.link}</span>
-                        </div>
-                    </div>
+                    <h4 class="link-card-title">${link.title}</h4>
+                    ${descriptionHtml}
+                </div>
+                <div class="link-card-footer">
+                    ${tagsHtml}
+                </div>
+                <div class="link-card-hover-icon">
+                    <i class="fas fa-external-link-alt"></i>
                 </div>`;
+            
             linkElementWrapper.appendChild(linkElement);
             linksListElement.appendChild(linkElementWrapper);
         });
