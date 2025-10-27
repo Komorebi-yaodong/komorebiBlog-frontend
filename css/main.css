@@ -443,6 +443,7 @@ body {
     border: 1px solid var(--card-border-color);
 }
 .sidebar-section-title {
+    text-align: center;
     font-family: var(--serif-font);
     font-size: 1.2rem;
     font-weight: 700;
@@ -450,6 +451,7 @@ body {
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--card-border-color);
     color: var(--text-color);
+    
 }
 .tags-list, .author-sidebar-section {
     padding: 0 !important;
@@ -488,7 +490,7 @@ body {
     color: var(--text-color);
 }
 .author-description {
-    color: var(--text-muted-color);
+    color: var(--text-muted-color) !important;
 }
 .author-contact-links a {
     color: var(--text-muted-color);
