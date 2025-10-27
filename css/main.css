@@ -148,12 +148,12 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.3);
+    background: none;
     transition: background 0.5s ease-in-out;
 }
 
 .hero.hero-overlay-hidden::before {
-    background: rgba(0, 0, 0, 0.1);
+    background: none;
 }
 
 .hero-title {
@@ -538,11 +538,11 @@ body {
     justify-content: center;
     text-align: center;
 }
-.post-hero-header::before { /* Gradient overlay for readability */
+.post-hero-header::before {
     content: '';
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%);
+    background: none;
 }
 .post-hero-header.no-image {
     padding: 5rem 0;
@@ -606,11 +606,10 @@ body {
 .toc-level-3 { padding-left: 2rem; }
 .toc-level-4 { padding-left: 3rem; }
 
-/* Mobile ToC FAB (Floating Action Button) */
 #mobile-toc-button-container {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    left: 20px;
     z-index: 1030;
 }
 #mobile-toc-button-container .btn {

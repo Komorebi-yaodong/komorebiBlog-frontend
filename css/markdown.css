@@ -22,6 +22,7 @@
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
+    scroll-margin-top: 5rem;
     margin-top: 2.2rem;
     margin-bottom: 1.2rem;
     font-weight: 700;
@@ -401,27 +402,11 @@
     padding-left: 2.5rem;
 }
 
-#mobile-toc-button-container.sticky-mobile-toc-button {
-    position: fixed;
-    left: 0;
-    right: 0;
-    z-index: 1020; /* Below navbar (Bootstrap default is 1030 for sticky-top) */
-    background-color: var(--bg-color-translucent, rgba(255, 255, 255, 0.75)); 
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    padding: 0.5rem var(--bs-container-padding-x, 1rem); /* Use Bootstrap container padding for consistency */
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    margin-bottom: 0 !important; /* Override original margin */
-    border-bottom: 1px solid var(--border-color-translucent, rgba(0,0,0,0.08));
-    transition: background-color 0.3s ease, backdrop-filter 0.3s ease; /* Smooth transition for effect */
-}
-
 #mobile-toc-button-container.sticky-mobile-toc-button .btn {
-    margin: 0; /* Ensure button inside doesn't add extra margins */
-    border-color: var(--primary-color); /* Make button border more visible on frosted bg */
+    margin: 0;
+    border-color: var(--primary-color);
     color: var(--primary-color);
 }
-
 
 @media (max-width: 768px) {
     .markdown-body pre {

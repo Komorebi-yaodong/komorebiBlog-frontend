@@ -28,7 +28,7 @@ def get_text_from_dir(dir_path):
     text = ""
     for file in os.listdir(dir_path):
         file_path = os.path.join(dir_path, file)
-        if os.path.isfile(file_path) and (file.endswith(".md") or file.endswith(".js") or file.endswith(".vue") or file.endswith(".json")):
+        if os.path.isfile(file_path) and (file.endswith(".md") or file.endswith(".js") or file.endswith(".vue") or file.endswith(".json") or file.endswith(".css")):
             text += read_text(file_path)
     return text
 

@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded',function(){
         if(postBodyElement) Prism.highlightAllUnder(postBodyElement);
         if(postBodyElement) addCopyButtons(postBodyElement);
         if(postBodyElement && tocListElement) generateTableOfContents(postBodyElement, tocListElement);
-        if(mobileTocButtonContainer) setupStickyMobileTocButton();
+        // if(mobileTocButtonContainer) setupStickyMobileTocButton();
 
 
         if(window.MathJax&&window.MathJax.Hub && postBodyElement)MathJax.Hub.Queue(["Typeset",MathJax.Hub,postBodyElement]);
