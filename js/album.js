@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 默认使用：https://raw.githubusercontent.com/Komorebi-yaodong/komorebiBlog/main
     // 部署了github pages之后：https://komorebi-yaodong.github.io/komorebiBlog
     // cloudflare pages之后：https://komorebiblog-content.pages.dev
-    // cloudflare pages之后：https://blogcontent.001412.xyz
-    const repoUrl = 'https://blogcontent.001412.xyz';
+    // cloudflare pages之后：https://blogcontent.141277.xyz
+    const repoUrl = 'https://blogcontent.141277.xyz';
     
     const urlParams = new URLSearchParams(window.location.search);
     const albumPath = urlParams.get('path');
